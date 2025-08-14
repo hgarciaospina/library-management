@@ -1,13 +1,43 @@
+using LibraryManagement.Application.Interfaces;
+using LibraryManagement.Application.Services;
+using LibraryManagement.Infrastructure.Data;
+using LibraryManagement.Application.Mappers;
+using Microsoft.EntityFrameworkCore;
+using AutoMapper;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// ----------------------
+// Configure services
+// ----------------------
+
+// Configurar DbContext para SQL Server (autenticación Windows)
+builder.Services.AddDbContext<LibraryContext>(options =>
+    options.UseSqlServer("Server=.;Database=LibraryDB;Trusted_Connection=True;"));
+
+// Registrar AutoMapper correctamente para .NET 8
+// Opción: registrar todos los perfiles de la capa Application
+builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(MappingProfile).Assembly));
+
+// Registrar servicios de aplicación (CRUD completo)
+builder.Services.AddScoped<IBookService, BookService>();
+builder.Services.AddScoped<IMemberService, MemberService>();
+builder.Services.AddScoped<ILoanService, LoanService>();
+builder.Services.AddScoped<ILibraryService, LibraryService>();
+
+// Añadir soporte para Razor Pages y API Controllers
+builder.Services.AddRazorPages();
+builder.Services.AddControllers();
+
+// Configurar Swagger/OpenAPI solo en desarrollo
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// ----------------------
+// Configure middleware
+// ----------------------
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -15,30 +45,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseRouting();
+app.UseAuthorization();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
+app.MapControllers();
+app.MapRazorPages();
 
 app.Run();
-
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
