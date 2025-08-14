@@ -10,23 +10,26 @@ namespace LibraryManagement.Application.Mappers
         {
             // Books
             CreateMap<Book, BookDto>().ReverseMap();
+            CreateMap<Book, BookUpdateDto>().ReverseMap(); // <--- Añadido para mapear Book <-> BookUpdateDto
+            CreateMap<BookDto, BookUpdateDto>().ReverseMap(); // Mapeo bidireccional
+            CreateMap<BookUpdateDto, Book>().ReverseMap();
+            CreateMap<BookUpdateDto, BookDto>(); // Opcional: si solo necesitas una dirección
             CreateMap<BookCreateDto, Book>();
-            CreateMap<BookUpdateDto, Book>();
 
             // Members
             CreateMap<Member, MemberDto>().ReverseMap();
+            CreateMap<Member, MemberUpdateDto>().ReverseMap(); // Map para edición
             CreateMap<MemberCreateDto, Member>();
-            CreateMap<MemberUpdateDto, Member>();
 
             // Loans
             CreateMap<Loan, LoanDto>().ReverseMap();
+            CreateMap<Loan, LoanUpdateDto>().ReverseMap(); // Map para edición
             CreateMap<LoanCreateDto, Loan>();
-            CreateMap<LoanUpdateDto, Loan>();
 
             // Libraries
             CreateMap<Library, LibraryDto>().ReverseMap();
+            CreateMap<Library, LibraryUpdateDto>().ReverseMap(); // Map para edición
             CreateMap<LibraryCreateDto, Library>();
-            CreateMap<LibraryUpdateDto, Library>();
         }
     }
 }

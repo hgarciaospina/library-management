@@ -1,22 +1,91 @@
+/* Base font size */
 html {
-  font-size: 14px;
+    font-size: 14px;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px;
+    }
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+/* Focus styles for buttons, inputs, links */
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
+/* Full height body */
 html {
-  position: relative;
-  min-height: 100%;
+    position: relative;
+    min-height: 100%;
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
+    font-family: Arial, sans-serif;
+    color: #333;
+    background: url('/images/library-bg.jpg') no-repeat center center fixed;
+    background-size: cover;
+}
+
+/* Container styling */
+.container {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.2);
+}
+
+/* Navbar custom */
+.navbar {
+    background-color: rgba(30, 30, 30, 0.95);
+}
+
+.navbar-brand {
+    font-weight: bold;
+    color: #fff !important;
+}
+
+.nav-link {
+    color: #fff !important;
+    margin-right: 10px;
+}
+
+    .nav-link:hover {
+        color: #258cfb !important;
+    }
+
+/* Table styling */
+.table {
+    background-color: #fff;
+    border-radius: 5px;
+}
+
+    .table th, .table td {
+        vertical-align: middle;
+    }
+
+/* Buttons */
+.btn-primary {
+    background-color: #258cfb;
+    border-color: #258cfb;
+}
+
+    .btn-primary:hover {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+
+.btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
 }

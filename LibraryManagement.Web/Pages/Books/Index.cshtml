@@ -1,0 +1,38 @@
+﻿@page
+@model LibraryManagement.Web.Pages.Books.IndexModel
+@{
+    ViewData["Title"] = "Books";
+}
+
+<h2>Books</h2>
+<p><a class="btn btn-primary" asp-page="Create">Add New Book</a></p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Author</th>
+            <th>ISBN</th>
+            <th>Year</th>
+            <th>Available</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var book in Model.Books)
+        {
+            <tr>
+                <td>@book.Title</td>
+                <td>@book.Author</td>
+                <td>@book.ISBN</td>
+                <td>@book.PublicationYear</td>
+                <td>@book.IsAvailable</td>
+                <td>
+                    <a class="btn btn-info btn-sm" asp-page="Details" asp-route-id="@book.Id">Details</a>
+                    <a class="btn btn-warning btn-sm" asp-page="Edit" asp-route-id="@book.Id">Edit</a>
+                    <a class="btn btn-danger btn-sm" asp-page="Delete" asp-route-id="@book.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

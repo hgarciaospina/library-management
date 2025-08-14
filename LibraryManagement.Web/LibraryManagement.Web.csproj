@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -12,10 +12,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Pages\Books\" />
     <Folder Include="Pages\Members\" />
     <Folder Include="Pages\Loans\" />
     <Folder Include="Pages\Libraries\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.19" />
+    <PackageReference Include="Riven.AspNetCore.Swashbuckle" Version="0.1.8" />
   </ItemGroup>
 
 </Project>

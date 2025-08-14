@@ -13,14 +13,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LibraryManagement.Core\LibraryManagement.Core.csproj" />
+    <ProjectReference Include="..\LibraryManagement.Infrastructure\LibraryManagement.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="DTOs\" />
-    <Folder Include="Interfaces\" />
-    <Folder Include="Mappers\" />
     <Folder Include="Validations\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>
