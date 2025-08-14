@@ -1,46 +1,66 @@
-
 using LibraryManagement.Application.Interfaces;
 using LibraryManagement.Application.Services;
 using LibraryManagement.Infrastructure.Data;
 using LibraryManagement.Application.Mappers;
 using Microsoft.EntityFrameworkCore;
 using LibraryManagement.Infrastructure.Repositories;
+using FluentValidation;
+using LibraryManagement.Application.Validations; // Validadores de todas las entidades
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configurar DbContext para SQL Server (autenticación Windows)
+// ================================================
+// Configurar DbContext
+// ================================================
 builder.Services.AddDbContext<LibraryContext>(options =>
     options.UseSqlServer(
         "Server=.;Database=LibraryDB;Trusted_Connection=True;TrustServerCertificate=True"
     )
 );
 
-/// Registrar AutoMapper (solo pasando el tipo del perfil)
+// ================================================
+// AutoMapper
+// ================================================
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.AddProfile<MappingProfile>();
 });
 
-
-//Seregistra el repositorio génerico
+// ================================================
+// Repositorio genérico
+// ================================================
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
-// Registrar servicios de aplicación
+// ================================================
+// Servicios de aplicación
+// ================================================
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IMemberService, MemberService>();
 builder.Services.AddScoped<ILoanService, LoanService>();
 builder.Services.AddScoped<ILibraryService, LibraryService>();
 
-// Razor Pages y API Controllers
+// ================================================
+// Registrar validadores FluentValidation (forma moderna)
+// ================================================
+builder.Services.AddValidatorsFromAssemblyContaining<BookValidator>();    // Detecta todos los validadores en la carpeta Validations
+
+// ================================================
+// Razor Pages y Controllers
+// ================================================
 builder.Services.AddRazorPages();
 builder.Services.AddControllers();
 
+// ================================================
 // Swagger/OpenAPI
+// ================================================
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+// ================================================
+// Pipeline
+// ================================================
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
