@@ -6,28 +6,44 @@
 
 <h1>Libraries</h1>
 
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-warning">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
 <a class="btn btn-primary mb-3" asp-page="Create">Add New Library</a>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Address</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var library in Model.Libraries)
-        {
+@if (Model.Libraries == null || !Model.Libraries.Any())
+{
+    <div class="alert alert-info">
+        No libraries found. You can create a new one using the "Add New Library" button.
+    </div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
             <tr>
-                <td>@library.Name</td>
-                <td>@library.Address</td>
-                <td>
-                    <a class="btn btn-sm btn-info" asp-page="Details" asp-route-id="@library.Id">Details</a>
-                    <a class="btn btn-sm btn-warning" asp-page="Edit" asp-route-id="@library.Id">Edit</a>
-                    <a class="btn btn-sm btn-danger" asp-page="Delete" asp-route-id="@library.Id">Delete</a>
-                </td>
+                <th>Name</th>
+                <th>Address</th>
+                <th>Actions</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var library in Model.Libraries)
+            {
+                <tr>
+                    <td>@library.Name</td>
+                    <td>@library.Address</td>
+                    <td>
+                        <a class="btn btn-sm btn-info" asp-page="Details" asp-route-id="@library.Id">Details</a>
+                        <a class="btn btn-sm btn-warning" asp-page="Edit" asp-route-id="@library.Id">Edit</a>
+                        <a class="btn btn-sm btn-danger" asp-page="Delete" asp-route-id="@library.Id">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

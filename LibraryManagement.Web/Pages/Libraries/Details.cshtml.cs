@@ -21,10 +21,13 @@ namespace LibraryManagement.Web.Pages.Libraries
         public async Task<IActionResult> OnGetAsync(int id)
         {
             Library = await _libraryService.GetByIdAsync(id);
+
             if (Library == null)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "The requested library does not exist.";
+                return RedirectToPage("Index"); // Redirige a la lista
             }
+
             return Page();
         }
     }
