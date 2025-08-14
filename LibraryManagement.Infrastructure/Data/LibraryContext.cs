@@ -5,7 +5,8 @@ namespace LibraryManagement.Infrastructure.Data
 {
     public class LibraryContext : DbContext
     {
-        public LibraryContext(DbContextOptions<LibraryContext> options) : base(options) { }
+        public LibraryContext(DbContextOptions<LibraryContext> options)
+            : base(options) { }
 
         public DbSet<Book> Books { get; set; }
         public DbSet<Member> Members { get; set; }
@@ -16,25 +17,33 @@ namespace LibraryManagement.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            // Books → Library (1:N)
             modelBuilder.Entity<Book>()
-                .HasMany(b => b.Loans)
-                .WithOne(l => l.Book)
-                .HasForeignKey(l => l.BookId);
+                .HasOne(b => b.Library)
+                .WithMany(l => l.Books)
+                .HasForeignKey(b => b.LibraryId)
+                .OnDelete(DeleteBehavior.Cascade);
 
+            // Members → Library (1:N)
             modelBuilder.Entity<Member>()
-                .HasMany(m => m.Loans)
-                .WithOne(l => l.Member)
-                .HasForeignKey(l => l.MemberId);
+                .HasOne(m => m.Library)
+                .WithMany(l => l.Members)
+                .HasForeignKey(m => m.LibraryId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<Library>()
-                .HasMany(l => l.Books)
-                .WithOne(b => b.Library)
-                .HasForeignKey(b => b.LibraryId);
+            // Loans → Book (N:1)
+            modelBuilder.Entity<Loan>()
+                .HasOne(l => l.Book)
+                .WithMany(b => b.Loans)
+                .HasForeignKey(l => l.BookId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Library>()
-                .HasMany(l => l.Members)
-                .WithOne(m => m.Library)
-                .HasForeignKey(m => m.LibraryId);
+            // Loans → Member (N:1)
+            modelBuilder.Entity<Loan>()
+                .HasOne(l => l.Member)
+                .WithMany(m => m.Loans)
+                .HasForeignKey(l => l.MemberId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

@@ -15,6 +15,6 @@ namespace LibraryManagement.Core.Entities
         public int LibraryId { get; set; }
         public Library Library { get; set; }
 
-        public ICollection<Loan> Loans { get; set; }
+        public ICollection<Loan> Loans { get; set; } = new List<Loan>();
     }
 }

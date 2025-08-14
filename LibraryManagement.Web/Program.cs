@@ -1,20 +1,29 @@
+
 using LibraryManagement.Application.Interfaces;
 using LibraryManagement.Application.Services;
 using LibraryManagement.Infrastructure.Data;
 using LibraryManagement.Application.Mappers;
 using Microsoft.EntityFrameworkCore;
+using LibraryManagement.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Configurar DbContext para SQL Server (autenticación Windows)
 builder.Services.AddDbContext<LibraryContext>(options =>
-    options.UseSqlServer("Server=.;Database=LibraryDB;Trusted_Connection=True;"));
+    options.UseSqlServer(
+        "Server=.;Database=LibraryDB;Trusted_Connection=True;TrustServerCertificate=True"
+    )
+);
 
 /// Registrar AutoMapper (solo pasando el tipo del perfil)
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.AddProfile<MappingProfile>();
 });
+
+
+//Seregistra el repositorio génerico
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
 // Registrar servicios de aplicación
 builder.Services.AddScoped<IBookService, BookService>();
