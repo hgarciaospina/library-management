@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace LibraryManagement.Application.DTOs
 {
-    internal class LibraryCreateDto
+    public class LibraryCreateDto
     {
+        public string Name { get; set; }
+        public string Address { get; set; }
     }
 }
