@@ -6,4 +6,16 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\LibraryManagement.Application\LibraryManagement.Application.csproj" />
+    <ProjectReference Include="..\LibraryManagement.Infrastructure\LibraryManagement.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Pages\Books\" />
+    <Folder Include="Pages\Members\" />
+    <Folder Include="Pages\Loans\" />
+    <Folder Include="Pages\Libraries\" />
+  </ItemGroup>
+
 </Project>
