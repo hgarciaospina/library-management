@@ -1,0 +1,38 @@
+﻿@page
+@model LibraryManagement.Web.Pages.Loans.CreateModel
+@{
+    ViewData["Title"] = "Create Loan";
+}
+
+<h2>Create Loan</h2>
+
+<form method="post">
+    <div class="form-group">
+        <label asp-for="Loan.BookId" class="form-label">Book</label>
+        <select asp-for="Loan.BookId" class="form-select" asp-items="Model.Books">
+            <option value="">-- Select Book --</option>
+        </select>
+        <span asp-validation-for="Loan.BookId" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mt-3">
+        <label asp-for="Loan.MemberId" class="form-label">Member</label>
+        <select asp-for="Loan.MemberId" class="form-select" asp-items="Model.Members">
+            <option value="">-- Select Member --</option>
+        </select>
+        <span asp-validation-for="Loan.MemberId" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mt-3">
+        <label asp-for="Loan.DueDate" class="form-label">Due Date</label>
+        <input asp-for="Loan.DueDate" class="form-control" type="date" />
+        <span asp-validation-for="Loan.DueDate" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">Create</button>
+    <a asp-page="Index" class="btn btn-secondary mt-3">Cancel</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

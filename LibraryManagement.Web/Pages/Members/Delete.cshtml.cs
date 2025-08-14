@@ -3,27 +3,27 @@ using LibraryManagement.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace LibraryManagement.Web.Pages.Books
+namespace LibraryManagement.Web.Pages.Members
 {
     public class DeleteModel : PageModel
     {
-        private readonly IBookService _bookService;
-        public DeleteModel(IBookService bookService) => _bookService = bookService;
+        private readonly IMemberService _memberService;
+        public DeleteModel(IMemberService memberService) => _memberService = memberService;
 
         [BindProperty]
-        public BookDto Book { get; set; } = new BookDto();
+        public MemberDto Member { get; set; } = new MemberDto();
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
-            var book = await _bookService.GetByIdAsync(id);
-            if (book == null) return NotFound();
-            Book = book;
+            var member = await _memberService.GetByIdAsync(id);
+            if (member == null) return NotFound();
+            Member = member;
             return Page();
         }
 
         public async Task<IActionResult> OnPostAsync(int id)
         {
-            await _bookService.DeleteAsync(id);
+            await _memberService.DeleteAsync(id);
             return RedirectToPage("Index");
         }
     }

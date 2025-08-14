@@ -7,27 +7,39 @@
 <h2>Edit Book</h2>
 
 <form method="post">
-    <input type="hidden" asp-for="Book.Id" />
-    <div class="mb-3">
-        <label asp-for="Book.Title" class="form-label"></label>
+    <div class="form-group">
+        <label asp-for="Book.Title"></label>
         <input asp-for="Book.Title" class="form-control" />
         <span asp-validation-for="Book.Title" class="text-danger"></span>
     </div>
-    <div class="mb-3">
-        <label asp-for="Book.Author" class="form-label"></label>
+
+    <div class="form-group mt-3">
+        <label asp-for="Book.Author"></label>
         <input asp-for="Book.Author" class="form-control" />
         <span asp-validation-for="Book.Author" class="text-danger"></span>
     </div>
-    <div class="mb-3">
-        <label asp-for="Book.ISBN" class="form-label"></label>
+
+    <div class="form-group mt-3">
+        <label asp-for="Book.ISBN"></label>
         <input asp-for="Book.ISBN" class="form-control" />
         <span asp-validation-for="Book.ISBN" class="text-danger"></span>
     </div>
-    <div class="mb-3">
-        <label asp-for="Book.PublicationYear" class="form-label"></label>
+
+    <div class="form-group mt-3">
+        <label asp-for="Book.PublicationYear"></label>
         <input asp-for="Book.PublicationYear" class="form-control" />
         <span asp-validation-for="Book.PublicationYear" class="text-danger"></span>
     </div>
-    <button type="submit" class="btn btn-success">Save</button>
-    <a asp-page="Index" class="btn btn-secondary">Cancel</a>
+
+    <div class="form-group mt-3 form-check">
+        <input asp-for="Book.IsAvailable" class="form-check-input" />
+        <label asp-for="Book.IsAvailable" class="form-check-label"></label>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">Save</button>
+    <a asp-page="Index" class="btn btn-secondary mt-3">Cancel</a>
 </form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

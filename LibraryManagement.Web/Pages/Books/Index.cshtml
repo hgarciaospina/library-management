@@ -5,7 +5,8 @@
 }
 
 <h2>Books</h2>
-<p><a class="btn btn-primary" asp-page="Create">Add New Book</a></p>
+
+<a asp-page="Create" class="btn btn-success mb-3">Create New Book</a>
 
 <table class="table table-striped">
     <thead>
@@ -13,7 +14,7 @@
             <th>Title</th>
             <th>Author</th>
             <th>ISBN</th>
-            <th>Year</th>
+            <th>Publication Year</th>
             <th>Available</th>
             <th>Actions</th>
         </tr>
@@ -26,11 +27,11 @@
                 <td>@book.Author</td>
                 <td>@book.ISBN</td>
                 <td>@book.PublicationYear</td>
-                <td>@book.IsAvailable</td>
+                <td>@(book.IsAvailable ? "Yes" : "No")</td>
                 <td>
-                    <a class="btn btn-info btn-sm" asp-page="Details" asp-route-id="@book.Id">Details</a>
-                    <a class="btn btn-warning btn-sm" asp-page="Edit" asp-route-id="@book.Id">Edit</a>
-                    <a class="btn btn-danger btn-sm" asp-page="Delete" asp-route-id="@book.Id">Delete</a>
+                    <a asp-page="Details" asp-route-id="@book.Id" class="btn btn-info btn-sm">Details</a>
+                    <a asp-page="Edit" asp-route-id="@book.Id" class="btn btn-primary btn-sm">Edit</a>
+                    <a asp-page="Delete" asp-route-id="@book.Id" class="btn btn-danger btn-sm">Delete</a>
                 </td>
             </tr>
         }

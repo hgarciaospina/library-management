@@ -1,0 +1,28 @@
+﻿@page "{id:int}"
+@model LibraryManagement.Web.Pages.Members.DetailsModel
+@{
+    ViewData["Title"] = "Member Details";
+}
+
+<h2>Member Details</h2>
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">First Name</dt>
+        <dd class="col-sm-10">@Model.Member.FirstName</dd>
+
+        <dt class="col-sm-2">Last Name</dt>
+        <dd class="col-sm-10">@Model.Member.LastName</dd>
+
+        <dt class="col-sm-2">Email</dt>
+        <dd class="col-sm-10">@Model.Member.Email</dd>
+
+        <dt class="col-sm-2">Phone</dt>
+        <dd class="col-sm-10">@Model.Member.PhoneNumber</dd>
+
+        <dt class="col-sm-2">Registration Date</dt>
+        <dd class="col-sm-10">@Model.Member.RegistrationDate.ToShortDateString()</dd>
+    </dl>
+</div>
+
+<a asp-page="Index" class="btn btn-secondary">Back to List</a>

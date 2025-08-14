@@ -1,0 +1,30 @@
+﻿@page "{id:int}"
+@model LibraryManagement.Web.Pages.Libraries.EditModel
+@{
+    ViewData["Title"] = "Edit Library";
+}
+
+<h1>Edit Library</h1>
+
+<form method="post">
+    <input type="hidden" asp-for="Library.Id" />
+
+    <div class="mb-3">
+        <label asp-for="Library.Name" class="form-label"></label>
+        <input asp-for="Library.Name" class="form-control" />
+        <span asp-validation-for="Library.Name" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Library.Address" class="form-label"></label>
+        <input asp-for="Library.Address" class="form-control" />
+        <span asp-validation-for="Library.Address" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-page="Index" class="btn btn-secondary">Cancel</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

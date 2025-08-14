@@ -1,0 +1,44 @@
+﻿@page "{id:int}"
+@model LibraryManagement.Web.Pages.Loans.EditModel
+@{
+    ViewData["Title"] = "Edit Loan";
+}
+
+<h2>Edit Loan</h2>
+
+<form method="post">
+    <div class="form-group">
+        <label asp-for="Loan.BookId">Book</label>
+        <select asp-for="Loan.BookId" class="form-select" asp-items="Model.Books">
+            <option value="">-- Select Book --</option>
+        </select>
+        <span asp-validation-for="Loan.BookId" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mt-3">
+        <label asp-for="Loan.MemberId">Member</label>
+        <select asp-for="Loan.MemberId" class="form-select" asp-items="Model.Members">
+            <option value="">-- Select Member --</option>
+        </select>
+        <span asp-validation-for="Loan.MemberId" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mt-3">
+        <label asp-for="Loan.DueDate">Due Date</label>
+        <input asp-for="Loan.DueDate" type="date" class="form-control" />
+        <span asp-validation-for="Loan.DueDate" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mt-3">
+        <label asp-for="Loan.ReturnDate">Return Date</label>
+        <input asp-for="Loan.ReturnDate" type="date" class="form-control" />
+        <span asp-validation-for="Loan.ReturnDate" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">Save</button>
+    <a asp-page="Index" class="btn btn-secondary mt-3">Cancel</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,7 +1,6 @@
 ﻿using LibraryManagement.Application.DTOs;
 using LibraryManagement.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 
 namespace LibraryManagement.Api.Controllers
 {
@@ -16,9 +15,28 @@ namespace LibraryManagement.Api.Controllers
             _service = service;
         }
 
-        [HttpGet] public async Task<IActionResult> GetAll() => Ok(await _service.GetAllAsync());
-        [HttpGet("{id}")] public async Task<IActionResult> GetById(int id) => Ok(await _service.GetByIdAsync(id));
-        [HttpPost] public async Task<IActionResult> Create(LibraryCreateDto dto) => Ok(await _service.CreateAsync(dto));
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var libraries = await _service.GetAllAsync();
+            return Ok(libraries);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var library = await _service.GetByIdAsync(id);
+            if (library == null) return NotFound();
+            return Ok(library);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create(LibraryCreateDto dto)
+        {
+            var library = await _service.CreateAsync(dto); 
+            return CreatedAtAction(nameof(GetById), new { id = library.Id }, library);
+        }
+
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, LibraryUpdateDto dto)
         {
@@ -26,6 +44,7 @@ namespace LibraryManagement.Api.Controllers
             await _service.UpdateAsync(dto);
             return NoContent();
         }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

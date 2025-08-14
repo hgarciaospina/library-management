@@ -1,0 +1,39 @@
+﻿@page
+@model LibraryManagement.Web.Pages.Members.IndexModel
+@{
+    ViewData["Title"] = "Members";
+}
+
+<h2>Members</h2>
+
+<a asp-page="Create" class="btn btn-success mb-3">Create New Member</a>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Registration Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var member in Model.Members)
+        {
+            <tr>
+                <td>@member.FirstName</td>
+                <td>@member.LastName</td>
+                <td>@member.Email</td>
+                <td>@member.PhoneNumber</td>
+                <td>@member.RegistrationDate.ToShortDateString()</td>
+                <td>
+                    <a asp-page="Details" asp-route-id="@member.Id" class="btn btn-info btn-sm">Details</a>
+                    <a asp-page="Edit" asp-route-id="@member.Id" class="btn btn-primary btn-sm">Edit</a>
+                    <a asp-page="Delete" asp-route-id="@member.Id" class="btn btn-danger btn-sm">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

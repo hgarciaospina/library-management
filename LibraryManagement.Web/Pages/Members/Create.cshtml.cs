@@ -3,20 +3,20 @@ using LibraryManagement.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace LibraryManagement.Web.Pages.Books
+namespace LibraryManagement.Web.Pages.Members
 {
     public class CreateModel : PageModel
     {
-        private readonly IBookService _bookService;
-        public CreateModel(IBookService bookService) => _bookService = bookService;
+        private readonly IMemberService _memberService;
+        public CreateModel(IMemberService memberService) => _memberService = memberService;
 
         [BindProperty]
-        public BookCreateDto Book { get; set; } = new BookCreateDto();
+        public MemberCreateDto Member { get; set; } = new MemberCreateDto();
 
         public async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid) return Page();
-            await _bookService.CreateAsync(Book);
+            await _memberService.CreateAsync(Member);
             return RedirectToPage("Index");
         }
     }

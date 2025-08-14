@@ -1,0 +1,33 @@
+﻿@page
+@model LibraryManagement.Web.Pages.Libraries.IndexModel
+@{
+    ViewData["Title"] = "Libraries";
+}
+
+<h1>Libraries</h1>
+
+<a class="btn btn-primary mb-3" asp-page="Create">Add New Library</a>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Address</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var library in Model.Libraries)
+        {
+            <tr>
+                <td>@library.Name</td>
+                <td>@library.Address</td>
+                <td>
+                    <a class="btn btn-sm btn-info" asp-page="Details" asp-route-id="@library.Id">Details</a>
+                    <a class="btn btn-sm btn-warning" asp-page="Edit" asp-route-id="@library.Id">Edit</a>
+                    <a class="btn btn-sm btn-danger" asp-page="Delete" asp-route-id="@library.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

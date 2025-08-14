@@ -1,0 +1,32 @@
+﻿@page "{id:int}"
+@model LibraryManagement.Web.Pages.Loans.DetailsModel
+@{
+    ViewData["Title"] = "Loan Details";
+}
+
+<h1>Loan Details</h1>
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">ID</dt>
+        <dd class="col-sm-10">@Model.Loan.Id</dd>
+
+        <dt class="col-sm-2">Book ID</dt>
+        <dd class="col-sm-10">@Model.Loan.BookId</dd>
+
+        <dt class="col-sm-2">Member ID</dt>
+        <dd class="col-sm-10">@Model.Loan.MemberId</dd>
+
+        <dt class="col-sm-2">Loan Date</dt>
+        <dd class="col-sm-10">@Model.Loan.LoanDate.ToShortDateString()</dd>
+
+        <dt class="col-sm-2">Due Date</dt>
+        <dd class="col-sm-10">@Model.Loan.DueDate.ToShortDateString()</dd>
+
+        <dt class="col-sm-2">Return Date</dt>
+        <dd class="col-sm-10">@Model.Loan.ReturnDate?.ToShortDateString() ?? "-"</dd>
+    </dl>
+</div>
+
+<a asp-page="Edit" asp-route-id="@Model.Loan.Id" class="btn btn-primary">Edit</a>
+<a asp-page="Index" class="btn btn-secondary">Back to List</a>

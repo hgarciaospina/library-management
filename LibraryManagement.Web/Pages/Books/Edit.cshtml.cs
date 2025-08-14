@@ -2,28 +2,33 @@
 using LibraryManagement.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using AutoMapper;
 
 namespace LibraryManagement.Web.Pages.Books
 {
     public class EditModel : PageModel
     {
         private readonly IBookService _bookService;
-        private readonly IMapper _mapper;
-
-        public EditModel(IBookService bookService, IMapper mapper)
-        {
-            _bookService = bookService;
-            _mapper = mapper;
-        }
+        public EditModel(IBookService bookService) => _bookService = bookService;
 
         [BindProperty]
         public BookUpdateDto Book { get; set; } = new BookUpdateDto();
 
-        public async Task OnGetAsync(int id)
+        public async Task<IActionResult> OnGetAsync(int id)
         {
-            var bookDto = await _bookService.GetByIdAsync(id);
-            Book = _mapper.Map<BookUpdateDto>(bookDto);
+            var book = await _bookService.GetByIdAsync(id);
+            if (book == null) return NotFound();
+
+            Book = new BookUpdateDto
+            {
+                Id = book.Id,
+                Title = book.Title,
+                Author = book.Author,
+                ISBN = book.ISBN,
+                PublicationYear = book.PublicationYear,
+                IsAvailable = book.IsAvailable
+            };
+
+            return Page();
         }
 
         public async Task<IActionResult> OnPostAsync()

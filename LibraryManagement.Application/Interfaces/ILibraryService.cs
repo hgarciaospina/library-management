@@ -6,8 +6,8 @@ namespace LibraryManagement.Application.Interfaces
     {
         Task<IEnumerable<LibraryDto>> GetAllAsync();
         Task<LibraryDto> GetByIdAsync(int id);
-        Task<LibraryDto> CreateAsync(LibraryCreateDto dto);
-        Task UpdateAsync(LibraryUpdateDto dto);
+        Task<LibraryDto> CreateAsync(LibraryCreateDto libraryCreateDto);  
+        Task UpdateAsync(LibraryUpdateDto libraryUpdateDto);
         Task DeleteAsync(int id);
     }
 }
