@@ -1,0 +1,86 @@
+### Directorios generados por el IDE ###
+.vs/
+.vscode/
+.idea/
+[Bb]in/
+[Oo]bj/
+[Tt]emp/
+[Rr]elease/
+[Dd]ebug/
+x64/
+x86/
+bld/
+[Ll]og/
+[Ll]ogs/
+
+### Archivos de usuario y configuraciones ###
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.cachefile
+*.VC.db
+*.VC.VC.opendb
+
+### Archivos de proyecto y compilación ###
+*.nupkg
+*.nuget.props
+*.nuget.targets
+*.msi
+*.cache
+*.dotCover
+*.pidb
+*.pdb
+*.ilk
+*.meta
+*.log
+*.dll
+*.exe
+*.lib
+*.exp
+*.sql
+*.manifest
+*.pubxml
+*.swp
+*.swo
+
+### Azure y despliegues ###
+appsettings.*.json
+local.settings.json
+*.azurepubxml
+*.Publish.xml
+
+### Paquetes y dependencias ###
+packages/
+[Nn]u[Gg]et/
+[Nn]u[Gg]et.Config
+*.nupkg
+node_modules/
+
+### Pruebas y cobertura ###
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.trx
+*.coverage
+*.coveragexml
+*.VisualState.xml
+
+### Rider y otros IDEs ###
+*.sln.iml
+*.ide/
+*.cr/
+*.jmconfig
+*.dotCover
+
+### SQL y bases de datos ###
+*.mdf
+*.ldf
+*.sdf
+*.ndf
+
+### Otros ###
+_ReSharper.*
+*.orig
+*.sass-cache/
+*.sublime-workspace
+*.DS_Store
