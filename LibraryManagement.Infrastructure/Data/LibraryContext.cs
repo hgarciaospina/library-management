@@ -44,6 +44,13 @@ namespace LibraryManagement.Infrastructure.Data
                 .WithMany(m => m.Loans)
                 .HasForeignKey(l => l.MemberId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Loans → Library (N:1)
+            modelBuilder.Entity<Loan>()
+                .HasOne(l => l.Library)
+                .WithMany() // No lista de Loans en Library
+                .HasForeignKey(l => l.LibraryId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

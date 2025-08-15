@@ -12,6 +12,9 @@ namespace LibraryManagement.Core.Entities
         public int MemberId { get; set; }
         public Member Member { get; set; }
 
+        public int LibraryId { get; set; }
+        public Library Library { get; set; }
+
         public DateTime LoanDate { get; set; } = DateTime.UtcNow;
         public DateTime? ReturnDate { get; set; }
         public DateTime DueDate { get; set; } = DateTime.UtcNow.AddDays(14);
