@@ -30,6 +30,11 @@ namespace LibraryManagement.Application.Services
             return _mapper.Map<BookDto>(book);
         }
 
+        // Get EF tracked entity by id
+        public async Task<Book> GetEntityByIdAsync(int id)
+        {
+            return await _repository.GetByIdAsync(id); // returns the entity tracked by EF
+        }
         public async Task<BookDto> CreateAsync(BookCreateDto dto)
         {
             var book = _mapper.Map<Book>(dto);
@@ -46,6 +51,11 @@ namespace LibraryManagement.Application.Services
         public async Task DeleteAsync(int id)
         {
             await _repository.DeleteAsync(id);
+        }
+
+        public async Task SaveEntityAsync(Book entity)
+        {
+            await _repository.SaveChangesAsync(); // EF already tracks the entity
         }
     }
 }

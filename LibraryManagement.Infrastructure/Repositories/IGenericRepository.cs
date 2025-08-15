@@ -10,6 +10,8 @@ namespace LibraryManagement.Infrastructure.Repositories
         Task AddAsync(T entity);
         Task UpdateAsync(T entity);
         Task DeleteAsync(int id);
+        // ✅ Add this method to allow saving tracked entity changes
+        Task SaveChangesAsync();
     }
 
     public class GenericRepository<T> : IGenericRepository<T> where T : class
@@ -31,6 +33,11 @@ namespace LibraryManagement.Infrastructure.Repositories
         {
             var entity = await GetByIdAsync(id);
             _dbSet.Remove(entity);
+            await _context.SaveChangesAsync();
+        }
+        // ✅ Implement SaveChangesAsync to save tracked entities
+        public async Task SaveChangesAsync()
+        {
             await _context.SaveChangesAsync();
         }
     }

@@ -7,32 +7,82 @@
 <h2>Create Loan</h2>
 
 <form method="post">
+    <!-- Library selection (first dropdown to filter others) -->
     <div class="form-group">
+        <label asp-for="Loan.LibraryId" class="form-label">Library</label>
+        <select asp-for="Loan.LibraryId" class="form-select" asp-items="Model.Libraries" id="LibrarySelect">
+            <option value="">-- Select Library --</option>
+        </select>
+        <span asp-validation-for="Loan.LibraryId" class="text-danger"></span>
+    </div>
+
+    <!-- Filtered Books dropdown -->
+    <div class="form-group mt-3">
         <label asp-for="Loan.BookId" class="form-label">Book</label>
-        <select asp-for="Loan.BookId" class="form-select" asp-items="Model.Books">
+        <select asp-for="Loan.BookId" class="form-select" id="BookSelect">
             <option value="">-- Select Book --</option>
         </select>
         <span asp-validation-for="Loan.BookId" class="text-danger"></span>
     </div>
 
+    <!-- Filtered Members dropdown -->
     <div class="form-group mt-3">
         <label asp-for="Loan.MemberId" class="form-label">Member</label>
-        <select asp-for="Loan.MemberId" class="form-select" asp-items="Model.Members">
+        <select asp-for="Loan.MemberId" class="form-select" id="MemberSelect">
             <option value="">-- Select Member --</option>
         </select>
         <span asp-validation-for="Loan.MemberId" class="text-danger"></span>
     </div>
 
+    <!-- Due Date -->
     <div class="form-group mt-3">
         <label asp-for="Loan.DueDate" class="form-label">Due Date</label>
         <input asp-for="Loan.DueDate" class="form-control" type="date" />
         <span asp-validation-for="Loan.DueDate" class="text-danger"></span>
     </div>
 
+    <!-- Submit and cancel buttons -->
     <button type="submit" class="btn btn-primary mt-3">Create</button>
     <a asp-page="Index" class="btn btn-secondary mt-3">Cancel</a>
 </form>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // IMPORTANT (Razor Pages):
+        // Handlers are invoked via ?handler=HandlerName on the SAME page (Loans/Create).
+        // Fetch filtered books and members when library changes
+        document.getElementById("LibrarySelect").addEventListener("change", function () {
+            var libraryId = this.value;
+
+            if (!libraryId) {
+                document.getElementById("BookSelect").innerHTML = '<option value="">-- Select Book --</option>';
+                document.getElementById("MemberSelect").innerHTML = '<option value="">-- Select Member --</option>';
+                return;
+            }
+
+            // Fetch books for the selected library
+            fetch(`/Loans/Create?handler=BooksByLibrary&libraryId=${libraryId}`)
+                .then(response => response.json())
+                .then(data => {
+                    let bookSelect = document.getElementById("BookSelect");
+                    bookSelect.innerHTML = '<option value="">-- Select Book --</option>';
+                    data.forEach(b => {
+                        bookSelect.innerHTML += `<option value="${b.value}">${b.text}</option>`;
+                    });
+                });
+
+            // Fetch members for the selected library
+            fetch(`/Loans/Create?handler=MembersByLibrary&libraryId=${libraryId}`)
+                .then(response => response.json())
+                .then(data => {
+                    let memberSelect = document.getElementById("MemberSelect");
+                    memberSelect.innerHTML = '<option value="">-- Select Member --</option>';
+                    data.forEach(m => {
+                        memberSelect.innerHTML += `<option value="${m.value}">${m.text}</option>`;
+                    });
+                });
+        });
+    </script>
 }
