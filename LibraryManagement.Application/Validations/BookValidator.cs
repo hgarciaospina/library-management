@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using LibraryManagement.Application.DTOs;
-using System;
 
 namespace LibraryManagement.Application.Validations
 {
@@ -29,8 +28,9 @@ namespace LibraryManagement.Application.Validations
 
             // Año de publicación entre 1500 y el año actual
             RuleFor(b => b.PublicationYear)
-                .InclusiveBetween(1500, DateTime.Now.Year)
-                .WithMessage($"Publication year must be between 1500 and {DateTime.Now.Year}.");
+             .NotNull().WithMessage("Publication year is required.")
+    .            InclusiveBetween(1500, DateTime.Now.Year)
+    .            WithMessage($"Publication year must be between 1500 and {DateTime.Now.Year}.");
 
             // Librería seleccionada (no puede ser cero o negativo)
             RuleFor(b => b.LibraryId)

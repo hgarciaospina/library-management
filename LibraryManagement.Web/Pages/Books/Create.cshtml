@@ -1,40 +1,67 @@
 ﻿@page
 @model LibraryManagement.Web.Pages.Books.CreateModel
 @{
-    ViewData["Title"] = "Create Book";
+    ViewData["Title"] = "Crear Libro";
 }
 
-<h2>Create Book</h2>
+<h2>Crear Nuevo Libro</h2>
 
 <form method="post">
+    <div class="form-group">
+        <label asp-for="Book.ISBN"></label>
+        <input asp-for="Book.ISBN" class="form-control" />
+        <span asp-validation-for="Book.ISBN" class="text-danger"></span>
+    </div>
+
     <div class="form-group">
         <label asp-for="Book.Title"></label>
         <input asp-for="Book.Title" class="form-control" />
         <span asp-validation-for="Book.Title" class="text-danger"></span>
     </div>
 
-    <div class="form-group mt-3">
+    <div class="form-group">
         <label asp-for="Book.Author"></label>
         <input asp-for="Book.Author" class="form-control" />
         <span asp-validation-for="Book.Author" class="text-danger"></span>
     </div>
 
-    <div class="form-group mt-3">
-        <label asp-for="Book.ISBN"></label>
-        <input asp-for="Book.ISBN" class="form-control" />
-        <span asp-validation-for="Book.ISBN" class="text-danger"></span>
-    </div>
-
-    <div class="form-group mt-3">
-        <label asp-for="Book.PublicationYear"></label>
-        <input asp-for="Book.PublicationYear" class="form-control" />
+    <!-- Slider del año de publicación -->
+    <div class="form-group">
+        <div class="d-flex justify-content-between">
+            <label for="yearSlider">Publication Year</label>
+            <span id="yearValue" class="fw-bold">@Model.Book.PublicationYear</span>
+        </div>
+        <input asp-for="Book.PublicationYear"
+               type="range"
+               min="1500"
+               max="@DateTime.Now.Year"
+               value="@Model.Book.PublicationYear"
+               class="form-range"
+               id="yearSlider"
+               oninput="document.getElementById('yearValue').textContent = this.value" />
         <span asp-validation-for="Book.PublicationYear" class="text-danger"></span>
     </div>
 
-    <button type="submit" class="btn btn-success mt-3">Create</button>
-    <a asp-page="Index" class="btn btn-secondary mt-3">Cancel</a>
+    <!-- Select de bibliotecas -->
+    <div class="form-group">
+        <label asp-for="Book.LibraryId">Library</label>
+        <select asp-for="Book.LibraryId" class="form-control" asp-items="Model.LibraryList">
+            <option value="0">-- Seleccione una biblioteca --</option>
+        </select>
+        <span asp-validation-for="Book.LibraryId" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <a asp-page="Index" class="btn btn-secondary">Cancelar</a>
 </form>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var slider = document.getElementById('yearSlider');
+            var yearValue = document.getElementById('yearValue');
+            yearValue.textContent = slider.value;
+        });
+    </script>
 }
