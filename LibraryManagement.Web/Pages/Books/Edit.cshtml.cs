@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-
 namespace LibraryManagement.Web.Pages.Books
 {
     public class EditModel : PageModel
@@ -23,14 +22,12 @@ namespace LibraryManagement.Web.Pages.Books
 
         public List<SelectListItem> LibraryList { get; set; } = new();
 
-        // GET: load existing book
         public async Task<IActionResult> OnGetAsync(int id)
         {
             var dto = await _bookService.GetByIdAsync(id);
-            if (dto == null)
-                return NotFound();
+            if (dto == null) return NotFound();
 
-            // Map manually to BookUpdateDto
+            // Map manual
             Book.Id = dto.Id;
             Book.Title = dto.Title;
             Book.Author = dto.Author;
@@ -43,19 +40,18 @@ namespace LibraryManagement.Web.Pages.Books
             return Page();
         }
 
-        // POST: validate and update using DTO directly
         public async Task<IActionResult> OnPostAsync()
         {
-            // FluentValidation via ModelState
             if (!ModelState.IsValid)
             {
                 await LoadLibrariesAsync();
                 return Page();
             }
 
-            // Update using BookUpdateDto directly
-            await _bookService.UpdateAsync(Book);
+            // Convert nullable LibraryId a int
+            Book.LibraryId = Book.LibraryId!.Value;
 
+            await _bookService.UpdateAsync(Book);
             return RedirectToPage("Index");
         }
 

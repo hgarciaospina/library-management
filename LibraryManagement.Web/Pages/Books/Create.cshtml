@@ -1,10 +1,10 @@
 ﻿@page
 @model LibraryManagement.Web.Pages.Books.CreateModel
 @{
-    ViewData["Title"] = "Crear Libro";
+    ViewData["Title"] = "Create Book";
 }
 
-<h2>Crear Nuevo Libro</h2>
+<h2>Create New Book</h2>
 
 <form method="post">
     <div class="form-group">
@@ -46,13 +46,13 @@
     <div class="form-group">
         <label asp-for="Book.LibraryId">Library</label>
         <select asp-for="Book.LibraryId" class="form-control" asp-items="Model.LibraryList">
-            <option value="0">-- Seleccione una biblioteca --</option>
+            <option value="">-- Select Library --</option> 
         </select>
         <span asp-validation-for="Book.LibraryId" class="text-danger"></span>
     </div>
 
-    <button type="submit" class="btn btn-primary">Guardar</button>
-    <a asp-page="Index" class="btn btn-secondary">Cancelar</a>
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-page="Index" class="btn btn-secondary">Cancel</a>
 </form>
 
 @section Scripts {
