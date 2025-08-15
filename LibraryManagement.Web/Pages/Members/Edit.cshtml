@@ -7,6 +7,8 @@
 <h2>Edit Member</h2>
 
 <form method="post">
+    <input type="hidden" asp-for="Member.Id" />
+
     <div class="form-group">
         <label asp-for="Member.FirstName"></label>
         <input asp-for="Member.FirstName" class="form-control" />
@@ -29,6 +31,15 @@
         <label asp-for="Member.PhoneNumber"></label>
         <input asp-for="Member.PhoneNumber" class="form-control" />
         <span asp-validation-for="Member.PhoneNumber" class="text-danger"></span>
+    </div>
+
+    <!-- NEW: Select Library -->
+    <div class="form-group mt-3">
+        <label asp-for="Member.LibraryId"></label>
+        <select asp-for="Member.LibraryId" asp-items="Model.LibraryList" class="form-control">
+            <option value="">-- Select a Library --</option>
+        </select>
+        <span asp-validation-for="Member.LibraryId" class="text-danger"></span>
     </div>
 
     <button type="submit" class="btn btn-primary mt-3">Save</button>
