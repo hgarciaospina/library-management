@@ -4,7 +4,18 @@
     ViewData["Title"] = "Loans";
 }
 
-<h2>Loans</h2>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <!-- Page title from ViewData -->
+    <h2>@ViewData["Title"]</h2>
+
+    @* Display selected library name on the right if LibraryId is set *@
+    @if (Model.LibraryId.HasValue && Model.Loans.Any())
+    {
+        <span class="badge bg-primary fs-5 py-2 px-3">
+            @Model.Loans.First().LibraryName
+        </span>
+    }
+</div>
 
 <a asp-page="Create" class="btn btn-success mb-3">Create New Loan</a>
 

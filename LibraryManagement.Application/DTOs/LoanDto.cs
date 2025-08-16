@@ -12,6 +12,9 @@
         public DateTime? ReturnDate { get; set; }
         public DateTime DueDate { get; set; }
 
+        // Library name comes from the related entity
+        public string LibraryName { get; set; } = string.Empty;
+
         // Optional: include navigation for service mapping
         public BookDto? Book { get; set; }
         public MemberDto? Member { get; set; }

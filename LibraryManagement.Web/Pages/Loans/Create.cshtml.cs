@@ -4,11 +4,14 @@ using LibraryManagement.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace LibraryManagement.Web.Pages.Loans
 {
+    /// <summary>
+    /// PageModel for creating a new Loan.
+    /// Supports AJAX calls to get books and members filtered by library.
+    /// After creation, redirects to Index filtered by the selected LibraryId.
+    /// </summary>
     public class CreateModel : PageModel
     {
         private readonly ILoanService _loanService;
@@ -32,12 +35,20 @@ namespace LibraryManagement.Web.Pages.Loans
             _mapper = mapper;
         }
 
+        /// <summary>
+        /// Loan DTO bound to the form.
+        /// </summary>
         [BindProperty]
         public LoanCreateDto Loan { get; set; } = new LoanCreateDto();
 
+        /// <summary>
+        /// Libraries dropdown list items.
+        /// </summary>
         public IEnumerable<SelectListItem> Libraries { get; set; } = new List<SelectListItem>();
 
-        // Load libraries for first dropdown
+        /// <summary>
+        /// OnGetAsync loads libraries for the dropdown when the page is first displayed.
+        /// </summary>
         public async Task<IActionResult> OnGetAsync()
         {
             Libraries = (await _libraryService.GetAllAsync())
@@ -46,29 +57,41 @@ namespace LibraryManagement.Web.Pages.Loans
             return Page();
         }
 
+        /// <summary>
+        /// OnPostAsync handles form submission to create a new loan.
+        /// After creation, redirects to Index with LibraryId to filter the loans table.
+        /// </summary>
         public async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
             {
-                await OnGetAsync(); // reload libraries if validation fails
+                // Reload libraries if validation fails
+                await OnGetAsync();
                 return Page();
             }
 
-            // Create loan
-            await _loanService.CreateAsync(Loan);
+            // Create the loan
+            var createdLoan = await _loanService.CreateAsync(Loan);
 
-            // --- CORRECTED: Mark the book as unavailable without EF tracking error ---
-            var trackedBook = await _bookService.GetEntityByIdAsync(Loan.BookId); // returns tracked Book entity
+            // --- Ensure LibraryId is loaded correctly from related Book ---
+            var loanWithLibrary = await _loanService.GetByIdWithDetailsAsync(createdLoan.Id);
+
+            // Mark the book as unavailable
+            var trackedBook = await _bookService.GetEntityByIdAsync(Loan.BookId);
             if (trackedBook != null)
             {
                 trackedBook.IsAvailable = false; // modify directly
                 await _bookService.SaveEntityAsync(trackedBook); // save changes
             }
 
-            return RedirectToPage("Index");
+            // Redirect to Index filtered by the correct LibraryId
+            return RedirectToPage("Index", new { libraryId = loanWithLibrary.LibraryId });
         }
 
-        // Handler: get books by library for AJAX
+        /// <summary>
+        /// AJAX handler to get available books filtered by library.
+        /// Returns JSON { value, text } for populating dropdowns.
+        /// </summary>
         public async Task<JsonResult> OnGetBooksByLibrary(int libraryId)
         {
             var books = (await _bookService.GetAllAsync())
@@ -78,7 +101,10 @@ namespace LibraryManagement.Web.Pages.Loans
             return new JsonResult(books);
         }
 
-        // Handler: get members by library for AJAX
+        /// <summary>
+        /// AJAX handler to get members filtered by library.
+        /// Returns JSON { value, text } for populating dropdowns.
+        /// </summary>
         public async Task<JsonResult> OnGetMembersByLibrary(int libraryId)
         {
             var members = (await _memberService.GetAllAsync())

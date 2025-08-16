@@ -1,0 +1,21 @@
+﻿@using LibraryManagement.Application.DTOs
+@model IEnumerable<LibraryDto>
+
+@* If there are no libraries, display a disabled message *@
+@if (!Model.Any())
+{
+    <li><span class="dropdown-item disabled">No libraries available</span></li>
+}
+else
+{
+    @* Loop through each library and create a dropdown item *@
+    @foreach (var library in Model)
+    {
+        <li>
+            <!-- Razor Pages link to Index.cshtml with libraryId as query parameter -->
+            <a class="dropdown-item" href="@Url.Page("/Loans/Index", new { libraryId = library.Id })">
+                @library.Name
+            </a>
+        </li>
+    }
+}
