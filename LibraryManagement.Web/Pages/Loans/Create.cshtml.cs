@@ -3,7 +3,6 @@ using LibraryManagement.Application.DTOs;
 using LibraryManagement.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,14 +10,13 @@ using System.Threading.Tasks;
 namespace LibraryManagement.Web.Pages.Loans
 {
     /// <summary>
-    /// PageModel for creating a new Loan.
-    /// This page only handles UI interactions.
-    /// All business logic, including marking books as unavailable, is handled in LoanService.
+    /// PageModel for creating a loan.
+    /// Ensures library comes from query and is read-only.
     /// </summary>
     public class CreateModel : PageModel
     {
         private readonly ILoanService _loanService;
-        private readonly IBookService _bookService; // still needed for AJAX dropdowns
+        private readonly IBookService _bookService;
         private readonly IMemberService _memberService;
         private readonly ILibraryService _libraryService;
         private readonly IMapper _mapper;
@@ -28,8 +26,7 @@ namespace LibraryManagement.Web.Pages.Loans
             IBookService bookService,
             IMemberService memberService,
             ILibraryService libraryService,
-            IMapper mapper
-        )
+            IMapper mapper)
         {
             _loanService = loanService;
             _bookService = bookService;
@@ -39,73 +36,77 @@ namespace LibraryManagement.Web.Pages.Loans
         }
 
         /// <summary>
-        /// DTO bound to the form for creating a loan.
+        /// DTO bound to the form.
         /// </summary>
         [BindProperty]
         public LoanCreateDto Loan { get; set; } = new LoanCreateDto();
 
         /// <summary>
-        /// Dropdown list of libraries for the UI.
+        /// Displayed library name.
         /// </summary>
-        public IEnumerable<SelectListItem> Libraries { get; set; } = new List<SelectListItem>();
+        public string SelectedLibraryName { get; set; } = string.Empty;
 
         /// <summary>
-        /// Loads libraries for the dropdown when the page is displayed.
+        /// Books for selected library.
         /// </summary>
-        public async Task<IActionResult> OnGetAsync()
+        public List<(int Id, string Title)> Books { get; set; } = new();
+
+        /// <summary>
+        /// Members for selected library.
+        /// </summary>
+        public List<(int Id, string FullName)> Members { get; set; } = new();
+
+        /// <summary>
+        /// Load page with optional libraryId from query.
+        /// </summary>
+        public async Task<IActionResult> OnGetAsync(int? libraryId)
         {
-            Libraries = (await _libraryService.GetAllAsync())
-                .Select(l => new SelectListItem(l.Name, l.Id.ToString()));
+            if (!libraryId.HasValue)
+            {
+                return BadRequest("LibraryId is required in query.");
+            }
+
+            Loan.LibraryId = libraryId.Value;
+
+            var library = (await _libraryService.GetAllAsync())
+                .FirstOrDefault(l => l.Id == libraryId.Value);
+
+            if (library == null)
+            {
+                return NotFound("Library not found.");
+            }
+
+            SelectedLibraryName = library.Name;
+
+            // Load books and members for this library
+            Books = (await _bookService.GetAllAsync())
+                .Where(b => b.LibraryId == libraryId.Value && b.IsAvailable)
+                .Select(b => (b.Id, b.Title))
+                .ToList();
+
+            Members = (await _memberService.GetAllAsync())
+                .Where(m => m.LibraryId == libraryId.Value)
+                .Select(m => (m.Id, $"{m.FirstName} {m.LastName}"))
+                .ToList();
 
             return Page();
         }
 
         /// <summary>
-        /// Handles form submission to create a new loan.
-        /// Business logic like marking the book as unavailable is handled in LoanService.
-        /// Redirects to Index page filtered by the LibraryId of the created loan.
+        /// Handles form submission to create a loan.
+        /// LibraryId comes from query/hidden input.
         /// </summary>
         public async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
             {
-                // Reload libraries if validation fails
-                await OnGetAsync();
+                await OnGetAsync(Loan.LibraryId);
                 return Page();
             }
 
-            // Create the loan using the service
-            // Service ensures book is marked unavailable and all relations are handled
             var createdLoan = await _loanService.CreateAsync(Loan);
 
-            // Redirect to Index filtered by the correct LibraryId
             return RedirectToPage("Index", new { libraryId = createdLoan.LibraryId });
-        }
-
-        /// <summary>
-        /// AJAX endpoint to get available books filtered by library.
-        /// Returns JSON { value, text } for populating dropdowns.
-        /// </summary>
-        public async Task<JsonResult> OnGetBooksByLibrary(int libraryId)
-        {
-            var books = (await _bookService.GetAllAsync())
-                .Where(b => b.LibraryId == libraryId && b.IsAvailable)
-                .Select(b => new { value = b.Id, text = b.Title });
-
-            return new JsonResult(books);
-        }
-
-        /// <summary>
-        /// AJAX endpoint to get members filtered by library.
-        /// Returns JSON { value, text } for populating dropdowns.
-        /// </summary>
-        public async Task<JsonResult> OnGetMembersByLibrary(int libraryId)
-        {
-            var members = (await _memberService.GetAllAsync())
-                .Where(m => m.LibraryId == libraryId)
-                .Select(m => new { value = m.Id, text = $"{m.FirstName} {m.LastName}" });
-
-            return new JsonResult(members);
         }
     }
 }

@@ -17,7 +17,18 @@
     }
 </div>
 
-<a asp-page="Create" class="btn btn-success mb-3">Create New Loan</a>
+@* Updated "Create New Loan" button to pass libraryId via route *@
+@if (Model.LibraryId.HasValue)
+{
+    <a asp-page="Create" asp-route-libraryId="@Model.LibraryId.Value" class="btn btn-success mb-3">
+        Create New Loan
+    </a>
+}
+else
+{
+    @* Fallback if no library is selected; allows user to pick a library in Create page *@
+    <a asp-page="Create" class="btn btn-success mb-3">Create New Loan</a>
+}
 
 <table class="table table-striped">
     <thead>

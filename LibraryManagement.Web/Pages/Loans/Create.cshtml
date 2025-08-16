@@ -7,82 +7,49 @@
 <h2>Create Loan</h2>
 
 <form method="post">
-    <!-- Library selection (first dropdown to filter others) -->
+    <!-- Library read-only display -->
     <div class="form-group">
-        <label asp-for="Loan.LibraryId" class="form-label">Library</label>
-        <select asp-for="Loan.LibraryId" class="form-select" asp-items="Model.Libraries" id="LibrarySelect">
-            <option value="">-- Select Library --</option>
-        </select>
-        <span asp-validation-for="Loan.LibraryId" class="text-danger"></span>
+        <label class="form-label">Library</label>
+        <!-- Shows the library name -->
+        <input type="text" class="form-control" value="@Model.SelectedLibraryName" readonly />
+        <!-- Hidden input to send the library ID -->
+        <input type="hidden" asp-for="Loan.LibraryId" />
     </div>
 
-    <!-- Filtered Books dropdown -->
+    <!-- Books dropdown -->
     <div class="form-group mt-3">
         <label asp-for="Loan.BookId" class="form-label">Book</label>
-        <select asp-for="Loan.BookId" class="form-select" id="BookSelect">
+        <select asp-for="Loan.BookId" class="form-select">
             <option value="">-- Select Book --</option>
+            @foreach (var book in Model.Books)
+            {
+                <option value="@book.Id">@book.Title</option>
+            }
         </select>
         <span asp-validation-for="Loan.BookId" class="text-danger"></span>
     </div>
 
-    <!-- Filtered Members dropdown -->
+    <!-- Members dropdown -->
     <div class="form-group mt-3">
         <label asp-for="Loan.MemberId" class="form-label">Member</label>
-        <select asp-for="Loan.MemberId" class="form-select" id="MemberSelect">
+        <select asp-for="Loan.MemberId" class="form-select">
             <option value="">-- Select Member --</option>
+            @foreach (var member in Model.Members)
+            {
+                <option value="@member.Id">@member.FullName</option>
+            }
         </select>
         <span asp-validation-for="Loan.MemberId" class="text-danger"></span>
     </div>
 
-    <!-- Due Date -->
+    <!-- Due date -->
     <div class="form-group mt-3">
         <label asp-for="Loan.DueDate" class="form-label">Due Date</label>
         <input asp-for="Loan.DueDate" class="form-control" type="date" />
         <span asp-validation-for="Loan.DueDate" class="text-danger"></span>
     </div>
 
-    <!-- Submit and cancel buttons -->
+    <!-- Buttons -->
     <button type="submit" class="btn btn-primary mt-3">Create</button>
     <a asp-page="Index" class="btn btn-secondary mt-3">Cancel</a>
 </form>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-
-    <script>
-        // IMPORTANT (Razor Pages):
-        // Handlers are invoked via ?handler=HandlerName on the SAME page (Loans/Create).
-        // Fetch filtered books and members when library changes
-        document.getElementById("LibrarySelect").addEventListener("change", function () {
-            var libraryId = this.value;
-
-            if (!libraryId) {
-                document.getElementById("BookSelect").innerHTML = '<option value="">-- Select Book --</option>';
-                document.getElementById("MemberSelect").innerHTML = '<option value="">-- Select Member --</option>';
-                return;
-            }
-
-            // Fetch books for the selected library
-            fetch(`/Loans/Create?handler=BooksByLibrary&libraryId=${libraryId}`)
-                .then(response => response.json())
-                .then(data => {
-                    let bookSelect = document.getElementById("BookSelect");
-                    bookSelect.innerHTML = '<option value="">-- Select Book --</option>';
-                    data.forEach(b => {
-                        bookSelect.innerHTML += `<option value="${b.value}">${b.text}</option>`;
-                    });
-                });
-
-            // Fetch members for the selected library
-            fetch(`/Loans/Create?handler=MembersByLibrary&libraryId=${libraryId}`)
-                .then(response => response.json())
-                .then(data => {
-                    let memberSelect = document.getElementById("MemberSelect");
-                    memberSelect.innerHTML = '<option value="">-- Select Member --</option>';
-                    data.forEach(m => {
-                        memberSelect.innerHTML += `<option value="${m.value}">${m.text}</option>`;
-                    });
-                });
-        });
-    </script>
-}
