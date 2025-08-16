@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using LibraryManagement.Infrastructure.Repositories;
 using FluentValidation;
 using LibraryManagement.Application.Validations; // Validadores de todas las entidades
+using FluentValidation.AspNetCore; // Necesario para activar la integración con ASP.NET Core
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,9 +41,14 @@ builder.Services.AddScoped<ILoanService, LoanService>();
 builder.Services.AddScoped<ILibraryService, LibraryService>();
 
 // ================================================
-// Registrar validadores FluentValidation (forma moderna)
+// Registrar validadores FluentValidation
 // ================================================
-builder.Services.AddValidatorsFromAssemblyContaining<BookValidator>();    // Detecta todos los validadores en la carpeta Validations
+// Detecta automáticamente todos los validadores dentro del ensamblado de Validations
+builder.Services.AddValidatorsFromAssemblyContaining<BookValidator>();
+
+// Activa la integración de FluentValidation con ASP.NET Core para que las reglas se apliquen automáticamente
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
 
 // ================================================
 // Razor Pages y Controllers

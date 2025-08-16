@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentValidation; // Required for IValidator
+using FluentValidation.Results;
 
 namespace LibraryManagement.Web.Pages.Loans
 {
@@ -20,19 +22,22 @@ namespace LibraryManagement.Web.Pages.Loans
         private readonly IMemberService _memberService;
         private readonly ILibraryService _libraryService;
         private readonly IMapper _mapper;
+        private readonly IValidator<LoanCreateDto> _validator; // Loan validator
 
         public CreateModel(
             ILoanService loanService,
             IBookService bookService,
             IMemberService memberService,
             ILibraryService libraryService,
-            IMapper mapper)
+            IMapper mapper,
+            IValidator<LoanCreateDto> validator) // Inject LoanValidator
         {
             _loanService = loanService;
             _bookService = bookService;
             _memberService = memberService;
             _libraryService = libraryService;
             _mapper = mapper;
+            _validator = validator;
         }
 
         /// <summary>
@@ -95,9 +100,23 @@ namespace LibraryManagement.Web.Pages.Loans
         /// <summary>
         /// Handles form submission to create a loan.
         /// LibraryId comes from query/hidden input.
+        /// Includes FluentValidation validation.
         /// </summary>
         public async Task<IActionResult> OnPostAsync()
         {
+            // Run validation with FluentValidation
+            ValidationResult validationResult = _validator.Validate(Loan);
+            if (!validationResult.IsValid)
+            {
+                foreach (var error in validationResult.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.ErrorMessage);
+                }
+
+                await OnGetAsync(Loan.LibraryId);
+                return Page();
+            }
+
             if (!ModelState.IsValid)
             {
                 await OnGetAsync(Loan.LibraryId);

@@ -7,49 +7,75 @@
 <h2>Create Loan</h2>
 
 <form method="post">
-    <!-- Library read-only display -->
+    <!-- ============================= -->
+    <!-- Library read-only information -->
+    <!-- ============================= -->
     <div class="form-group">
         <label class="form-label">Library</label>
-        <!-- Shows the library name -->
+        <!-- Shows the selected library name -->
         <input type="text" class="form-control" value="@Model.SelectedLibraryName" readonly />
-        <!-- Hidden input to send the library ID -->
+        <!-- Hidden input to send the library ID back in the POST -->
         <input type="hidden" asp-for="Loan.LibraryId" />
     </div>
 
+    <!-- ============================= -->
     <!-- Books dropdown -->
+    <!-- ============================= -->
     <div class="form-group mt-3">
         <label asp-for="Loan.BookId" class="form-label">Book</label>
+
+        <!--
+            IMPORTANT: Default option has value="0"
+            so that FluentValidation rules like GreaterThan(0) or NotNull
+            can catch the case when the user doesn't select a book.
+        -->
         <select asp-for="Loan.BookId" class="form-select">
-            <option value="">-- Select Book --</option>
+            <option value="0">-- Select a Book --</option>
             @foreach (var book in Model.Books)
             {
                 <option value="@book.Id">@book.Title</option>
             }
         </select>
+
+        <!-- Validation message placeholder -->
         <span asp-validation-for="Loan.BookId" class="text-danger"></span>
     </div>
 
+    <!-- ============================= -->
     <!-- Members dropdown -->
+    <!-- ============================= -->
     <div class="form-group mt-3">
         <label asp-for="Loan.MemberId" class="form-label">Member</label>
+
+        <!-- Same trick: default option uses value="0" -->
         <select asp-for="Loan.MemberId" class="form-select">
-            <option value="">-- Select Member --</option>
+            <option value="0">-- Select a Member --</option>
             @foreach (var member in Model.Members)
             {
                 <option value="@member.Id">@member.FullName</option>
             }
         </select>
+
+        <!-- Validation message placeholder -->
         <span asp-validation-for="Loan.MemberId" class="text-danger"></span>
     </div>
 
+    <!-- ============================= -->
     <!-- Due date -->
+    <!-- ============================= -->
     <div class="form-group mt-3">
         <label asp-for="Loan.DueDate" class="form-label">Due Date</label>
+
+        <!-- HTML5 date picker -->
         <input asp-for="Loan.DueDate" class="form-control" type="date" />
+
+        <!-- Validation message placeholder -->
         <span asp-validation-for="Loan.DueDate" class="text-danger"></span>
     </div>
 
-    <!-- Buttons -->
+    <!-- ============================= -->
+    <!-- Action buttons -->
+    <!-- ============================= -->
     <button type="submit" class="btn btn-primary mt-3">Create</button>
     <a asp-page="Index" asp-route-libraryId="@Model.Loan.LibraryId" class="btn btn-secondary mt-3">Cancel</a>
 </form>
