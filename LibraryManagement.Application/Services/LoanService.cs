@@ -11,16 +11,21 @@ namespace LibraryManagement.Application.Services
 {
     /// <summary>
     /// Service implementation for Loan entity.
-    /// Handles CRUD operations and fetching loans with related Book, Member, and Library data.
+    /// Handles CRUD operations and ensures books are marked unavailable when a loan is created.
     /// </summary>
     public class LoanService : ILoanService
     {
-        private readonly IGenericRepository<Loan> _repository;
+        private readonly IGenericRepository<Loan> _loanRepository;
+        private readonly IGenericRepository<Book> _bookRepository;
         private readonly IMapper _mapper;
 
-        public LoanService(IGenericRepository<Loan> repository, IMapper mapper)
+        public LoanService(
+            IGenericRepository<Loan> loanRepository,
+            IGenericRepository<Book> bookRepository,
+            IMapper mapper)
         {
-            _repository = repository;
+            _loanRepository = loanRepository;
+            _bookRepository = bookRepository;
             _mapper = mapper;
         }
 
@@ -29,20 +34,19 @@ namespace LibraryManagement.Application.Services
         /// </summary>
         public async Task<IEnumerable<LoanDto>> GetAllAsync()
         {
-            var loans = await _repository.GetAllAsync();
+            var loans = await _loanRepository.GetAllAsync();
             return _mapper.Map<IEnumerable<LoanDto>>(loans);
         }
 
         /// <summary>
-        /// Get all loans including related Book, Member, and Library entities.
+        /// Get all loans including related Book, Book.Library, and Member entities.
         /// LibraryName is mapped from Book.Library.Name for display purposes.
         /// </summary>
         public async Task<IEnumerable<LoanDto>> GetAllWithDetailsAsync()
         {
-            // ✅ Include Book, Book.Library, and Member so LibraryName can be mapped
-            var loans = await _repository.GetAllIncludingAsync(
+            var loans = await _loanRepository.GetAllIncludingAsync(
                 l => l.Book,
-                l => l.Book.Library,  // Include Library navigation property
+                l => l.Book.Library,
                 l => l.Member
             );
 
@@ -51,21 +55,17 @@ namespace LibraryManagement.Application.Services
 
         /// <summary>
         /// Get a single loan by ID including related Book, Member, and Library entities.
-        /// This ensures that LibraryId and LibraryName are available for redirects or display.
+        /// Ensures LibraryId and LibraryName are available.
         /// </summary>
         public async Task<LoanDto> GetByIdWithDetailsAsync(int id)
         {
-            // Include Book, Book.Library, and Member
-            var loans = await _repository.GetAllIncludingAsync(
+            var loans = await _loanRepository.GetAllIncludingAsync(
                 l => l.Book,
                 l => l.Book.Library,
                 l => l.Member
             );
 
-            // Find the specific loan by ID
             var loanEntity = loans.FirstOrDefault(l => l.Id == id);
-
-            // Map to LoanDto including LibraryId and LibraryName
             return _mapper.Map<LoanDto>(loanEntity);
         }
 
@@ -74,18 +74,41 @@ namespace LibraryManagement.Application.Services
         /// </summary>
         public async Task<LoanDto> GetByIdAsync(int id)
         {
-            var loan = await _repository.GetByIdAsync(id);
+            var loan = await _loanRepository.GetByIdAsync(id);
             return _mapper.Map<LoanDto>(loan);
         }
 
         /// <summary>
-        /// Create a new loan.
+        /// Create a new loan and mark the related book as unavailable.
+        /// Both operations occur in the same service method to ensure consistency.
         /// </summary>
         public async Task<LoanDto> CreateAsync(LoanCreateDto dto)
         {
+            // Map DTO to Loan entity
             var loan = _mapper.Map<Loan>(dto);
-            await _repository.AddAsync(loan);
-            return _mapper.Map<LoanDto>(loan);
+
+            // Get the book entity to mark it as unavailable
+            var book = await _bookRepository.GetByIdAsync(dto.BookId);
+            if (book == null)
+            {
+                throw new KeyNotFoundException($"Book with ID {dto.BookId} not found.");
+            }
+
+            // Mark book as unavailable
+            book.IsAvailable = false;
+
+            // Save the book update
+            await _bookRepository.UpdateAsync(book);
+
+            // Save the loan
+            await _loanRepository.AddAsync(loan);
+
+            // Return mapped LoanDto including LibraryId for redirection
+            var loanDto = _mapper.Map<LoanDto>(loan);
+            loanDto.LibraryId = book.LibraryId;
+            loanDto.LibraryName = book.Library?.Name;
+
+            return loanDto;
         }
 
         /// <summary>
@@ -94,7 +117,7 @@ namespace LibraryManagement.Application.Services
         public async Task UpdateAsync(LoanUpdateDto dto)
         {
             var loan = _mapper.Map<Loan>(dto);
-            await _repository.UpdateAsync(loan);
+            await _loanRepository.UpdateAsync(loan);
         }
 
         /// <summary>
@@ -102,7 +125,7 @@ namespace LibraryManagement.Application.Services
         /// </summary>
         public async Task DeleteAsync(int id)
         {
-            await _repository.DeleteAsync(id);
+            await _loanRepository.DeleteAsync(id);
         }
     }
 }
