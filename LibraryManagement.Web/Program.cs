@@ -5,75 +5,75 @@ using LibraryManagement.Application.Mappers;
 using Microsoft.EntityFrameworkCore;
 using LibraryManagement.Infrastructure.Repositories;
 using FluentValidation;
-using LibraryManagement.Application.Validations; // Validadores de todas las entidades
-using FluentValidation.AspNetCore; // Necesario para activar la integración con ASP.NET Core
+using LibraryManagement.Application.Validations; // Validators for all entities
+using FluentValidation.AspNetCore; // Required to enable FluentValidation integration with ASP.NET Core
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ================================================
-// Configurar DbContext
-// ================================================
+/// ================================================
+/// Database Context Configuration
+/// ================================================
 builder.Services.AddDbContext<LibraryContext>(options =>
     options.UseSqlServer(
         "Server=.;Database=LibraryDB;Trusted_Connection=True;TrustServerCertificate=True"
     )
 );
 
-// ================================================
-// AutoMapper
-// ================================================
+/// ================================================
+/// AutoMapper Configuration
+/// ================================================
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.AddProfile<MappingProfile>();
 });
 
-// ================================================
-// Repositorio genérico
-// ================================================
+/// ================================================
+/// Generic Repository Registration
+/// ================================================
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
-// ================================================
-// Servicios de aplicación
-// ================================================
+/// ================================================
+/// Application Services Registration
+/// ================================================
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IMemberService, MemberService>();
 builder.Services.AddScoped<ILoanService, LoanService>();
 builder.Services.AddScoped<ILibraryService, LibraryService>();
 
-// ================================================
-// Registrar validadores FluentValidation
-// ================================================
-// Detecta automáticamente todos los validadores dentro del ensamblado de Validations
+/// ================================================
+/// FluentValidation Configuration
+/// ================================================
+// Automatically detects and registers all validators from the Validations assembly
 builder.Services.AddValidatorsFromAssemblyContaining<BookValidator>();
 
-// Activa la integración de FluentValidation con ASP.NET Core para que las reglas se apliquen automáticamente
+// Enables FluentValidation integration with ASP.NET Core (server + client side)
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
 
-// ================================================
-// Razor Pages y Controllers
-// ================================================
+/// ================================================
+/// MVC + Razor Pages
+/// ================================================
 builder.Services.AddRazorPages();
 builder.Services.AddControllers();
 
-// ================================================
-// Swagger/OpenAPI
-// ================================================
+/// ================================================
+/// Swagger/OpenAPI
+/// ================================================
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// ================================================
-// Pipeline
-// ================================================
+/// ================================================
+/// Middleware Pipeline
+/// ================================================
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Library API V1");
-        c.RoutePrefix = "swagger";
+        c.RoutePrefix = "swagger"; // Swagger UI available at /swagger
     });
 }
 
@@ -82,6 +82,7 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthorization();
 
+// Maps for Controllers and Razor Pages
 app.MapControllers();
 app.MapRazorPages();
 
