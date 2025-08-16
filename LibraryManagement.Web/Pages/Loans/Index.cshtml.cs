@@ -1,4 +1,4 @@
-using LibraryManagement.Application.DTOs;
+﻿using LibraryManagement.Application.DTOs;
 using LibraryManagement.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -8,14 +8,19 @@ namespace LibraryManagement.Web.Pages.Loans
     {
         private readonly ILoanService _loanService;
 
-        public IndexModel(ILoanService loanService) => _loanService = loanService;
+        public IndexModel(ILoanService loanService)
+        {
+            _loanService = loanService;
+        }
 
+        // List of loans to display in the table
         public IList<LoanDto> Loans { get; set; } = new List<LoanDto>();
 
         public async Task OnGetAsync()
         {
-            // Convertimos IEnumerable a IList
-            Loans = (await _loanService.GetAllAsync()).ToList();
+            // ✅ Use the new service method to include Book and Member navigation properties
+            var loans = await _loanService.GetAllWithDetailsAsync();
+            Loans = loans.ToList();
         }
     }
 }

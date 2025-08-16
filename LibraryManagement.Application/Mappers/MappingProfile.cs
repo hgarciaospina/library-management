@@ -60,9 +60,12 @@ namespace LibraryManagement.Application.Mappers
             // -------------------------------------------------
             // Map Loan entity to LoanDto and vice versa
             CreateMap<Loan, LoanDto>()
-                // Ensure we map related LibraryId for filtering in UI if needed
-                .ForMember(dest => dest.LibraryId, opt => opt.MapFrom(src => src.Book.LibraryId))
+                 // Map Book title
+                .ForMember(dest => dest.BookTitle, opt => opt.MapFrom(src => src.Book.Title))
+                 // Combine FirstName + LastName into MemberFullName
+                .ForMember(dest => dest.MemberFullName, opt => opt.MapFrom(src => src.Member.FirstName + " " + src.Member.LastName))
                 .ReverseMap();
+
 
             // Map Loan entity to LoanUpdateDto and vice versa
             CreateMap<Loan, LoanUpdateDto>()

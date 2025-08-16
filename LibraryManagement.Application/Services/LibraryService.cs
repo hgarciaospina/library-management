@@ -4,8 +4,6 @@ using LibraryManagement.Core.Entities;
 using LibraryManagement.Infrastructure.Data;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace LibraryManagement.Application.Services
 {

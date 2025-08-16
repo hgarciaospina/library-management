@@ -11,5 +11,9 @@
         public DateTime LoanDate { get; set; }
         public DateTime? ReturnDate { get; set; }
         public DateTime DueDate { get; set; }
+
+        // Optional: include navigation for service mapping
+        public BookDto? Book { get; set; }
+        public MemberDto? Member { get; set; }
     }
 }

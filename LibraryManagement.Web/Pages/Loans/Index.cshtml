@@ -23,8 +23,8 @@
         @foreach (var loan in Model.Loans)
         {
             <tr>
-                <td>@loan.BookTitle</td>
-                <td>@loan.MemberFullName</td>
+                <td>@loan.BookTitle</td>  @* Filled from LoanDto via AutoMapper *@
+                <td>@loan.MemberFullName</td>  @* Filled from LoanDto via AutoMapper *@
                 <td>@loan.LoanDate.ToShortDateString()</td>
                 <td>@loan.DueDate.ToShortDateString()</td>
                 <td>@loan.ReturnDate?.ToShortDateString()</td>

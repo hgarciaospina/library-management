@@ -23,6 +23,14 @@ namespace LibraryManagement.Application.Services
             return _mapper.Map<IEnumerable<LoanDto>>(loans);
         }
 
+        // ✅ New: Get all loans including Book and Member
+        public async Task<IEnumerable<LoanDto>> GetAllWithDetailsAsync()
+        {
+            // Use repository method that includes navigation properties
+            var loans = await _repository.GetAllIncludingAsync(l => l.Book, l => l.Member);
+            return _mapper.Map<IEnumerable<LoanDto>>(loans);
+        }
+
         public async Task<LoanDto> GetByIdAsync(int id)
         {
             var loan = await _repository.GetByIdAsync(id);
