@@ -4,18 +4,21 @@ using LibraryManagement.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace LibraryManagement.Web.Pages.Loans
 {
     /// <summary>
     /// PageModel for creating a new Loan.
-    /// Supports AJAX calls to get books and members filtered by library.
-    /// After creation, redirects to Index filtered by the selected LibraryId.
+    /// This page only handles UI interactions.
+    /// All business logic, including marking books as unavailable, is handled in LoanService.
     /// </summary>
     public class CreateModel : PageModel
     {
         private readonly ILoanService _loanService;
-        private readonly IBookService _bookService;
+        private readonly IBookService _bookService; // still needed for AJAX dropdowns
         private readonly IMemberService _memberService;
         private readonly ILibraryService _libraryService;
         private readonly IMapper _mapper;
@@ -36,18 +39,18 @@ namespace LibraryManagement.Web.Pages.Loans
         }
 
         /// <summary>
-        /// Loan DTO bound to the form.
+        /// DTO bound to the form for creating a loan.
         /// </summary>
         [BindProperty]
         public LoanCreateDto Loan { get; set; } = new LoanCreateDto();
 
         /// <summary>
-        /// Libraries dropdown list items.
+        /// Dropdown list of libraries for the UI.
         /// </summary>
         public IEnumerable<SelectListItem> Libraries { get; set; } = new List<SelectListItem>();
 
         /// <summary>
-        /// OnGetAsync loads libraries for the dropdown when the page is first displayed.
+        /// Loads libraries for the dropdown when the page is displayed.
         /// </summary>
         public async Task<IActionResult> OnGetAsync()
         {
@@ -58,8 +61,9 @@ namespace LibraryManagement.Web.Pages.Loans
         }
 
         /// <summary>
-        /// OnPostAsync handles form submission to create a new loan.
-        /// After creation, redirects to Index with LibraryId to filter the loans table.
+        /// Handles form submission to create a new loan.
+        /// Business logic like marking the book as unavailable is handled in LoanService.
+        /// Redirects to Index page filtered by the LibraryId of the created loan.
         /// </summary>
         public async Task<IActionResult> OnPostAsync()
         {
@@ -70,26 +74,16 @@ namespace LibraryManagement.Web.Pages.Loans
                 return Page();
             }
 
-            // Create the loan
+            // Create the loan using the service
+            // Service ensures book is marked unavailable and all relations are handled
             var createdLoan = await _loanService.CreateAsync(Loan);
 
-            // --- Ensure LibraryId is loaded correctly from related Book ---
-            var loanWithLibrary = await _loanService.GetByIdWithDetailsAsync(createdLoan.Id);
-
-            // Mark the book as unavailable
-            var trackedBook = await _bookService.GetEntityByIdAsync(Loan.BookId);
-            if (trackedBook != null)
-            {
-                trackedBook.IsAvailable = false; // modify directly
-                await _bookService.SaveEntityAsync(trackedBook); // save changes
-            }
-
             // Redirect to Index filtered by the correct LibraryId
-            return RedirectToPage("Index", new { libraryId = loanWithLibrary.LibraryId });
+            return RedirectToPage("Index", new { libraryId = createdLoan.LibraryId });
         }
 
         /// <summary>
-        /// AJAX handler to get available books filtered by library.
+        /// AJAX endpoint to get available books filtered by library.
         /// Returns JSON { value, text } for populating dropdowns.
         /// </summary>
         public async Task<JsonResult> OnGetBooksByLibrary(int libraryId)
@@ -102,7 +96,7 @@ namespace LibraryManagement.Web.Pages.Loans
         }
 
         /// <summary>
-        /// AJAX handler to get members filtered by library.
+        /// AJAX endpoint to get members filtered by library.
         /// Returns JSON { value, text } for populating dropdowns.
         /// </summary>
         public async Task<JsonResult> OnGetMembersByLibrary(int libraryId)
