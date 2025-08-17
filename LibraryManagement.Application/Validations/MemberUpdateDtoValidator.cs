@@ -7,6 +7,9 @@ namespace LibraryManagement.Application.Validations
     {
         public MemberUpdateDtoValidator()
         {
+            RuleFor(m => m.Id)
+                .GreaterThan(0).WithMessage("Id must be greater than 0.");
+
             RuleFor(m => m.FirstName)
                 .NotEmpty().WithMessage("First name is required.")
                 .MaximumLength(50).WithMessage("First name cannot exceed 50 characters.");
@@ -24,7 +27,8 @@ namespace LibraryManagement.Application.Validations
                 .Matches(@"^\+?\d{7,15}$").WithMessage("Invalid phone number format.");
 
             RuleFor(m => m.LibraryId)
-                .GreaterThan(0).WithMessage("Library must be selected.");
+                .NotNull().WithMessage("Library must be selected.")
+                .GreaterThan(0).WithMessage("Library must be greater than 0.");
         }
     }
 }
