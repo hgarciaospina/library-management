@@ -5,8 +5,8 @@ using LibraryManagement.Application.Mappers;
 using Microsoft.EntityFrameworkCore;
 using LibraryManagement.Infrastructure.Repositories;
 using FluentValidation;
-using LibraryManagement.Application.Validations; // Validators for all entities
-using FluentValidation.AspNetCore; // Required to enable FluentValidation integration with ASP.NET Core
+using LibraryManagement.Application.Validations;
+using FluentValidation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 /// ================================================
 builder.Services.AddDbContext<LibraryContext>(options =>
     options.UseSqlServer(
-        "Server=.;Database=LibraryDB;Trusted_Connection=True;TrustServerCertificate=True"
+        "Server=.;Database=LibraryDB;Trusted_Connection=True;Encrypt=False"
     )
 );
 
@@ -43,10 +43,7 @@ builder.Services.AddScoped<ILibraryService, LibraryService>();
 /// ================================================
 /// FluentValidation Configuration
 /// ================================================
-// Automatically detects and registers all validators from the Validations assembly
 builder.Services.AddValidatorsFromAssemblyContaining<BookValidator>();
-
-// Enables FluentValidation integration with ASP.NET Core (server + client side)
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
 
@@ -73,16 +70,17 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Library API V1");
-        c.RoutePrefix = "swagger"; // Swagger UI available at /swagger
+        c.RoutePrefix = "swagger";
     });
 }
 
-app.UseHttpsRedirection();
+// Quitamos HTTPS, solo HTTP local
+// app.UseHttpsRedirection();  <- comentado o eliminado
+
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthorization();
 
-// Maps for Controllers and Razor Pages
 app.MapControllers();
 app.MapRazorPages();
 

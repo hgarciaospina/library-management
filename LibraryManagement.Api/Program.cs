@@ -3,53 +3,102 @@ using LibraryManagement.Application.Services;
 using LibraryManagement.Infrastructure.Data;
 using LibraryManagement.Application.Mappers;
 using Microsoft.EntityFrameworkCore;
-using AutoMapper;
+using LibraryManagement.Infrastructure.Repositories;
+using FluentValidation;
+using LibraryManagement.Application.Validations;
+using FluentValidation.AspNetCore;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ----------------------
-// Configure services
-// ----------------------
+/// ================================================
+/// Database Context Configuration
+/// ================================================
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// Ajuste para desarrollo local: deshabilita cifrado SSL y confía en certificados autofirmados
+connectionString += ";Encrypt=False;TrustServerCertificate=True";
 
-// Configurar DbContext para SQL Server (autenticación Windows)
 builder.Services.AddDbContext<LibraryContext>(options =>
-    options.UseSqlServer("Server=.;Database=LibraryDB;Trusted_Connection=True;"));
+{
+    options.UseSqlServer(
+        connectionString,
+        sqlOptions => sqlOptions.EnableRetryOnFailure() // Manejo de errores transitorios
+    );
+});
 
-// Registrar AutoMapper correctamente para .NET 8
-// Opción: registrar todos los perfiles de la capa Application
-builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(MappingProfile).Assembly));
+/// ================================================
+/// AutoMapper Configuration
+/// ================================================
+builder.Services.AddAutoMapper(cfg =>
+{
+    cfg.AddProfile<MappingProfile>();
+});
 
-// Registrar servicios de aplicación (CRUD completo)
+/// ================================================
+/// Generic Repository Registration
+/// ================================================
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+/// ================================================
+/// Application Services Registration
+/// ================================================
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IMemberService, MemberService>();
 builder.Services.AddScoped<ILoanService, LoanService>();
 builder.Services.AddScoped<ILibraryService, LibraryService>();
 
-// Añadir soporte para Razor Pages y API Controllers
-builder.Services.AddRazorPages();
-builder.Services.AddControllers();
+/// ================================================
+/// FluentValidation Configuration
+/// ================================================
+builder.Services.AddValidatorsFromAssemblyContaining<BookValidator>();
 
-// Configurar Swagger/OpenAPI solo en desarrollo
+builder.Services.AddControllers()
+    .AddFluentValidation(fv =>
+    {
+        // Registra automáticamente todos los validators de la capa Application
+        fv.RegisterValidatorsFromAssemblyContaining<BookValidator>();
+        fv.AutomaticValidationEnabled = true; // <-- clave para que valide automáticamente
+    });
+
+builder.Services.AddRazorPages();
+
+/// ================================================
+/// Swagger/OpenAPI
+/// ================================================
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Library API",
+        Version = "v1",
+        Description = "API endpoints for Library Management System"
+    });
+});
 
 var app = builder.Build();
 
-// ----------------------
-// Configure middleware
-// ----------------------
-if (app.Environment.IsDevelopment())
+/// ================================================
+/// Middleware Pipeline
+/// ================================================
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Library API V1");
+    c.RoutePrefix = "swagger";
+});
 
-app.UseHttpsRedirection();
+// Solo HTTP
+// app.UseHttpsRedirection();
+
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthorization();
 
-app.MapControllers();
+/// ================================================
+/// Endpoint Mapping
+/// ================================================
+app.MapControllers(); // Los controllers con [ApiController] tomarán las validaciones automáticamente
 app.MapRazorPages();
 
 app.Run();
