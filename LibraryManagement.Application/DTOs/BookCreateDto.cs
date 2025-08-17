@@ -8,6 +8,6 @@ namespace LibraryManagement.Application.DTOs
         public string ISBN { get; set; }
         public int PublicationYear { get; set; }
         public int? LibraryId { get; set; }  // <-- nullable
-        public bool IsAvailable { get; set; }
+        public bool IsAvailable { get; set; } = true;
     }
 }

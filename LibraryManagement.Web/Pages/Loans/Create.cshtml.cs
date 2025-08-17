@@ -3,9 +3,6 @@ using LibraryManagement.Application.DTOs;
 using LibraryManagement.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using FluentValidation; // Required for IValidator
 using FluentValidation.Results;
 

@@ -23,12 +23,6 @@
     <!-- ============================= -->
     <div class="form-group mt-3">
         <label asp-for="Loan.BookId" class="form-label">Book</label>
-
-        <!--
-            IMPORTANT: Default option has value="0"
-            so that FluentValidation rules like GreaterThan(0) or NotNull
-            can catch the case when the user doesn't select a book.
-        -->
         <select asp-for="Loan.BookId" class="form-select">
             <option value="0">-- Select a Book --</option>
             @foreach (var book in Model.Books)
@@ -36,8 +30,6 @@
                 <option value="@book.Id">@book.Title</option>
             }
         </select>
-
-        <!-- Validation message placeholder -->
         <span asp-validation-for="Loan.BookId" class="text-danger"></span>
     </div>
 
@@ -46,8 +38,6 @@
     <!-- ============================= -->
     <div class="form-group mt-3">
         <label asp-for="Loan.MemberId" class="form-label">Member</label>
-
-        <!-- Same trick: default option uses value="0" -->
         <select asp-for="Loan.MemberId" class="form-select">
             <option value="0">-- Select a Member --</option>
             @foreach (var member in Model.Members)
@@ -55,8 +45,6 @@
                 <option value="@member.Id">@member.FullName</option>
             }
         </select>
-
-        <!-- Validation message placeholder -->
         <span asp-validation-for="Loan.MemberId" class="text-danger"></span>
     </div>
 
@@ -65,11 +53,12 @@
     <!-- ============================= -->
     <div class="form-group mt-3">
         <label asp-for="Loan.DueDate" class="form-label">Due Date</label>
-
-        <!-- HTML5 date picker -->
-        <input asp-for="Loan.DueDate" class="form-control" type="date" />
-
-        <!-- Validation message placeholder -->
+        <!-- HTML5 date picker, solo selección desde calendario -->
+        <input asp-for="Loan.DueDate"
+               class="form-control"
+               type="date"
+               onkeydown="return false"
+               min="@DateTime.Now.ToString("yyyy-MM-dd")" />
         <span asp-validation-for="Loan.DueDate" class="text-danger"></span>
     </div>
 
