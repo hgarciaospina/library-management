@@ -9,8 +9,9 @@ namespace LibraryManagement.Application.Services
 {
     /// <summary>
     /// Service implementation for Loan entity.
-    /// Handles CRUD operations and ensures books are marked unavailable when a loan is created.
-    /// Now integrates FluentValidation to ensure entities are valid before persisting.
+    /// Handles CRUD operations and ensures books are marked unavailable when a loan is created,
+    /// and available again when the loan is returned.
+    /// Validation is applied using FluentValidation.
     /// </summary>
     public class LoanService : ILoanService
     {
@@ -23,7 +24,7 @@ namespace LibraryManagement.Application.Services
             IGenericRepository<Loan> loanRepository,
             IGenericRepository<Book> bookRepository,
             IMapper mapper,
-            IValidator<Loan> loanValidator) // Inject validator
+            IValidator<Loan> loanValidator)
         {
             _loanRepository = loanRepository;
             _bookRepository = bookRepository;
@@ -42,7 +43,6 @@ namespace LibraryManagement.Application.Services
 
         /// <summary>
         /// Get all loans including related Book, Book.Library, and Member entities.
-        /// LibraryName is mapped from Book.Library.Name for display purposes.
         /// </summary>
         public async Task<IEnumerable<LoanDto>> GetAllWithDetailsAsync()
         {
@@ -57,7 +57,6 @@ namespace LibraryManagement.Application.Services
 
         /// <summary>
         /// Get a single loan by ID including related Book, Member, and Library entities.
-        /// Ensures LibraryId and LibraryName are available.
         /// </summary>
         public async Task<LoanDto> GetByIdWithDetailsAsync(int id)
         {
@@ -82,18 +81,16 @@ namespace LibraryManagement.Application.Services
 
         /// <summary>
         /// Create a new loan and mark the related book as unavailable.
-        /// Validation is executed before persisting to avoid null references or invalid state.
         /// </summary>
         public async Task<LoanDto> CreateAsync(LoanCreateDto dto)
         {
             // Map DTO to Loan entity
             var loan = _mapper.Map<Loan>(dto);
 
-            // Execute FluentValidation rules
+            // Validate loan before persisting
             var validationResult = await _loanValidator.ValidateAsync(loan);
             if (!validationResult.IsValid)
             {
-                // Collect validation messages and throw exception
                 var errors = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
                 throw new ArgumentException($"Loan validation failed: {errors}");
             }
@@ -101,9 +98,7 @@ namespace LibraryManagement.Application.Services
             // Get the book entity to mark it as unavailable
             var book = await _bookRepository.GetByIdAsync(dto.BookId);
             if (book == null)
-            {
                 throw new ArgumentException("Selected book does not exist.");
-            }
 
             // Mark book as unavailable
             book.IsAvailable = false;
@@ -122,19 +117,33 @@ namespace LibraryManagement.Application.Services
 
         /// <summary>
         /// Update an existing loan.
+        /// Loads the existing entity first to prevent EF insert issues.
+        /// Only updates allowed fields and sets book availability if returned.
         /// </summary>
         public async Task UpdateAsync(LoanUpdateDto dto)
         {
-            var loan = _mapper.Map<Loan>(dto);
+            // Load existing loan from database
+            var loan = await _loanRepository.GetByIdAsync(dto.Id);
+            if (loan == null)
+                throw new ArgumentException("Loan not found.");
 
-            // Validate before updating
-            var validationResult = await _loanValidator.ValidateAsync(loan);
-            if (!validationResult.IsValid)
+            // Update only allowed fields
+            loan.BookId = dto.BookId;
+            loan.DueDate = dto.DueDate;
+            loan.ReturnDate = dto.ReturnDate;
+
+            // If ReturnDate is set, mark the book as available
+            if (loan.ReturnDate.HasValue)
             {
-                var errors = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
-                throw new ArgumentException($"Loan validation failed: {errors}");
+                var book = await _bookRepository.GetByIdAsync(loan.BookId);
+                if (book != null)
+                {
+                    book.IsAvailable = true;
+                    await _bookRepository.UpdateAsync(book);
+                }
             }
 
+            // Save changes for the loan
             await _loanRepository.UpdateAsync(loan);
         }
 
