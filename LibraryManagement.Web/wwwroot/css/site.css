@@ -89,3 +89,14 @@ body {
     background-color: #28a745;
     border-color: #28a745;
 }
+
+/* Home page text sizing */
+.home-text h1 {
+    font-size: 4rem; 
+    font-weight: 700;
+}
+
+.home-text p {
+    font-size: 200px; 
+    font-weight: 600;
+}
