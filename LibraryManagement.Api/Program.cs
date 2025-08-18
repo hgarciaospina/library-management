@@ -14,8 +14,10 @@ using Microsoft.AspNetCore.Mvc;
 var builder = WebApplication.CreateBuilder(args);
 
 /// ================================================
-/// Database Context Configuration
+/// DATABASE CONTEXT CONFIGURATION
 /// ================================================
+/// Configures SQL Server connection for EF Core
+/// Includes retry policy for transient failures
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 connectionString += ";Encrypt=False;TrustServerCertificate=True"; // Dev adjustment
 
@@ -26,17 +28,18 @@ builder.Services.AddDbContext<LibraryContext>(options =>
 });
 
 /// ================================================
-/// AutoMapper Configuration
+/// AUTOMAPPER CONFIGURATION
 /// ================================================
+/// AutoMapper profile for mapping Entities <-> DTOs
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
 
 /// ================================================
-/// Generic Repository Registration
+/// GENERIC REPOSITORY REGISTRATION
 /// ================================================
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
 /// ================================================
-/// Application Services Registration
+/// APPLICATION SERVICES REGISTRATION
 /// ================================================
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IMemberService, MemberService>();
@@ -44,23 +47,24 @@ builder.Services.AddScoped<ILoanService, LoanService>();
 builder.Services.AddScoped<ILibraryService, LibraryService>();
 
 /// ================================================
-/// FluentValidation Configuration
+/// FLUENTVALIDATION CONFIGURATION
 /// ================================================
-// Register validators for all DTOs
+/// Registers validators automatically for DTOs
 builder.Services.AddValidatorsFromAssemblyContaining<BookValidator>();
 
 builder.Services.AddControllers()
     .AddFluentValidation(fv =>
     {
         fv.RegisterValidatorsFromAssemblyContaining<MemberCreateDtoValidator>();
-        fv.AutomaticValidationEnabled = true; // enable automatic validation
+        fv.AutomaticValidationEnabled = true; // Enables automatic validation
     });
 
 builder.Services.AddRazorPages();
 
 /// ================================================
-/// ApiBehavior configuration for full validation errors
+/// API BEHAVIOR CONFIGURATION
 /// ================================================
+/// Returns full validation error details for clients
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.InvalidModelStateResponseFactory = context =>
@@ -83,7 +87,7 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 });
 
 /// ================================================
-/// Swagger/OpenAPI Configuration
+/// SWAGGER / OPENAPI CONFIGURATION
 /// ================================================
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -92,20 +96,20 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "Library API",
         Version = "v1",
-        Description = "API endpoints for Library Management System"
+        Description = "Library Management System API endpoints. " +
+                      "Includes CRUD operations for Books, Members, Loans, and Libraries. " +
+                      "Use Swagger UI to test requests with examples."
     });
-
-    // Enable examples from Swashbuckle.AspNetCore.Filters
-    c.ExampleFilters();
+    c.ExampleFilters(); // Enables example request/response
 });
 
-// Register example providers for Create DTOs
+// Register example providers for all Create DTOs
 builder.Services.AddSwaggerExamplesFromAssemblyOf<MemberCreateExample>();
 builder.Services.AddSwaggerExamplesFromAssemblyOf<BookCreateExample>();
 builder.Services.AddSwaggerExamplesFromAssemblyOf<LibraryCreateExample>();
 builder.Services.AddSwaggerExamplesFromAssemblyOf<LoanCreateExample>();
 
-// Register example providers for Update DTOs
+// Register example providers for all Update DTOs
 builder.Services.AddSwaggerExamplesFromAssemblyOf<MemberUpdateExample>();
 builder.Services.AddSwaggerExamplesFromAssemblyOf<BookUpdateExample>();
 builder.Services.AddSwaggerExamplesFromAssemblyOf<LibraryUpdateExample>();
@@ -114,16 +118,16 @@ builder.Services.AddSwaggerExamplesFromAssemblyOf<LoanUpdateExample>();
 var app = builder.Build();
 
 /// ================================================
-/// Middleware Pipeline
+/// MIDDLEWARE PIPELINE
 /// ================================================
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Library API V1");
-    c.RoutePrefix = "swagger";
+    c.RoutePrefix = "swagger"; // Swagger UI available at /swagger
 });
 
-// HTTP only
+// Uncomment if HTTPS redirection is required
 // app.UseHttpsRedirection();
 
 app.UseStaticFiles();
@@ -131,7 +135,7 @@ app.UseRouting();
 app.UseAuthorization();
 
 /// ================================================
-/// Endpoint Mapping
+/// ENDPOINT MAPPING
 /// ================================================
 app.MapControllers();
 app.MapRazorPages();
@@ -139,8 +143,14 @@ app.MapRazorPages();
 app.Run();
 
 /// ================================================
-/// Swagger Example Classes for Create DTOs
+/// SWAGGER EXAMPLES FOR CREATE DTOS
 /// ================================================
+
+#region CREATE EXAMPLES
+
+/// <summary>
+/// Example of creating a Member
+/// </summary>
 public class MemberCreateExample : IExamplesProvider<LibraryManagement.Application.DTOs.MemberCreateDto>
 {
     public LibraryManagement.Application.DTOs.MemberCreateDto GetExamples() =>
@@ -154,6 +164,9 @@ public class MemberCreateExample : IExamplesProvider<LibraryManagement.Applicati
         };
 }
 
+/// <summary>
+/// Example of creating a Book
+/// </summary>
 public class BookCreateExample : IExamplesProvider<LibraryManagement.Application.DTOs.BookCreateDto>
 {
     public LibraryManagement.Application.DTOs.BookCreateDto GetExamples() =>
@@ -161,13 +174,16 @@ public class BookCreateExample : IExamplesProvider<LibraryManagement.Application
         {
             Title = "Clean Code",
             Author = "Robert C. Martin",
-            ISBN = "9780132350884",
+            ISBN = "978-0132350884",
             PublicationYear = 2008,
             LibraryId = 7,
             IsAvailable = true
         };
 }
 
+/// <summary>
+/// Example of creating a Loan
+/// </summary>
 public class LoanCreateExample : IExamplesProvider<LibraryManagement.Application.DTOs.LoanCreateDto>
 {
     public LibraryManagement.Application.DTOs.LoanCreateDto GetExamples() =>
@@ -180,6 +196,9 @@ public class LoanCreateExample : IExamplesProvider<LibraryManagement.Application
         };
 }
 
+/// <summary>
+/// Example of creating a Library
+/// </summary>
 public class LibraryCreateExample : IExamplesProvider<LibraryManagement.Application.DTOs.LibraryCreateDto>
 {
     public LibraryManagement.Application.DTOs.LibraryCreateDto GetExamples() =>
@@ -190,9 +209,14 @@ public class LibraryCreateExample : IExamplesProvider<LibraryManagement.Applicat
         };
 }
 
+#endregion
+
 /// ================================================
-/// Swagger Example Classes for Update DTOs
+/// SWAGGER EXAMPLES FOR UPDATE DTOS
 /// ================================================
+
+#region UPDATE EXAMPLES
+
 public class MemberUpdateExample : IExamplesProvider<LibraryManagement.Application.DTOs.MemberUpdateDto>
 {
     public LibraryManagement.Application.DTOs.MemberUpdateDto GetExamples() =>
@@ -215,7 +239,7 @@ public class BookUpdateExample : IExamplesProvider<LibraryManagement.Application
             Id = 15,
             Title = "Clean Code",
             Author = "Robert C. Martin",
-            ISBN = "9780132350884",
+            ISBN = "978-0132350884",
             PublicationYear = 2008,
             LibraryId = 7,
             IsAvailable = true
@@ -246,3 +270,51 @@ public class LoanUpdateExample : IExamplesProvider<LibraryManagement.Application
             ReturnDate = null
         };
 }
+
+#endregion
+
+/// ================================================
+/// CRUD ENDPOINT DOCUMENTATION FOR SWAGGER
+/// ================================================
+
+/*
+ * BOOKS:
+ * GET /api/books - List all books
+ * GET /api/books/{id} - Get book by ID
+ * POST /api/books - Create a book (BookCreateDto)
+ * PUT /api/books/{id} - Update a book (BookUpdateDto)
+ * DELETE /api/books/{id} - Delete a book
+ * 
+ * MEMBERS:
+ * GET /api/members
+ * GET /api/members/{id}
+ * POST /api/members
+ * PUT /api/members/{id}
+ * DELETE /api/members/{id}
+ *
+ * LOANS:
+ * GET /api/loans
+ * GET /api/loans/{id}
+ * POST /api/loans
+ * PUT /api/loans/{id}
+ * DELETE /api/loans/{id}
+ *
+ * LIBRARIES:
+ * GET /api/libraries
+ * GET /api/libraries/{id}
+ * POST /api/libraries
+ * PUT /api/libraries/{id}
+ * DELETE /api/libraries/{id}
+ *
+ * VALIDATIONS:
+ * - Emails must be in valid format
+ * - ISBN must follow standard format
+ * - Loan/Return dates: ReturnDate >= LoanDate
+ * - All required fields cannot be null
+ *
+ * SWAGGER USAGE:
+ * - Navigate to /swagger
+ * - Select endpoint
+ * - Click "Try it out"
+ * - Example requests for Create/Update DTOs are preloaded
+ */
