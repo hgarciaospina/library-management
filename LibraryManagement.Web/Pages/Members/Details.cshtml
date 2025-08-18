@@ -4,25 +4,56 @@
     ViewData["Title"] = "Member Details";
 }
 
-<h2>Member Details</h2>
+<h1 class="mb-4">Member Details</h1>
 
-<div>
-    <dl class="row">
-        <dt class="col-sm-2">First Name</dt>
-        <dd class="col-sm-10">@Model.Member.FirstName</dd>
+@if (Model.Member == null)
+{
+    <div class="alert alert-warning">
+        Member not found.
+    </div>
+    <a asp-page="Index" class="btn btn-secondary">Back to List</a>
+}
+else
+{
+    <!-- ============================= -->
+    <!-- Member Details Card -->
+    <!-- ============================= -->
+    <div class="card shadow-lg rounded-3 p-4 mb-4" style="background-color: #f8f9fa; transform: perspective(800px) rotateX(1deg);">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">@Model.Member.FirstName @Model.Member.LastName</h4>
+        </div>
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">First Name</dt>
+                <dd class="col-sm-9">@Model.Member.FirstName</dd>
 
-        <dt class="col-sm-2">Last Name</dt>
-        <dd class="col-sm-10">@Model.Member.LastName</dd>
+                <dt class="col-sm-3">Last Name</dt>
+                <dd class="col-sm-9">@Model.Member.LastName</dd>
 
-        <dt class="col-sm-2">Email</dt>
-        <dd class="col-sm-10">@Model.Member.Email</dd>
+                <dt class="col-sm-3">Email</dt>
+                <dd class="col-sm-9">@Model.Member.Email</dd>
 
-        <dt class="col-sm-2">Phone</dt>
-        <dd class="col-sm-10">@Model.Member.PhoneNumber</dd>
+                <dt class="col-sm-3">Phone</dt>
+                <dd class="col-sm-9">@Model.Member.PhoneNumber</dd>
 
-        <dt class="col-sm-2">Registration Date</dt>
-        <dd class="col-sm-10">@Model.Member.RegistrationDate.ToShortDateString()</dd>
-    </dl>
-</div>
+                <dt class="col-sm-3">Registration Date</dt>
+                <dd class="col-sm-9">@Model.Member.RegistrationDate.ToShortDateString()</dd>
+            </dl>
+        </div>
+        <div class="card-footer text-end">
+            <a asp-page="Index" class="btn btn-secondary">Back to List</a>
+        </div>
+    </div>
+}
 
-<a asp-page="Index" class="btn btn-secondary">Back to List</a>
+<style>
+    /* Card 3D hover effect */
+    .card {
+        transition: transform 0.3s;
+    }
+
+        .card:hover {
+            transform: perspective(800px) rotateX(3deg) rotateY(2deg);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+</style>
