@@ -4,46 +4,74 @@
     ViewData["Title"] = "Create Member";
 }
 
-<h2>Create Member</h2>
+<h1 class="mb-4">Create New Member</h1>
 
-<form method="post">
-    <div class="form-group">
-        <label asp-for="Member.FirstName"></label>
-        <input asp-for="Member.FirstName" class="form-control" />
-        <span asp-validation-for="Member.FirstName" class="text-danger"></span>
+<div class="card shadow-lg rounded-3 p-4" style="transform: perspective(800px) rotateX(1deg);">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">Member Information</h4>
     </div>
+    <div class="card-body">
+        <form method="post">
+            <div class="row g-3">
+                <!-- First Name -->
+                <div class="col-md-6">
+                    <label asp-for="Member.FirstName" class="form-label"></label>
+                    <input asp-for="Member.FirstName" class="form-control" />
+                    <span asp-validation-for="Member.FirstName" class="text-danger"></span>
+                </div>
 
-    <div class="form-group mt-3">
-        <label asp-for="Member.LastName"></label>
-        <input asp-for="Member.LastName" class="form-control" />
-        <span asp-validation-for="Member.LastName" class="text-danger"></span>
+                <!-- Last Name -->
+                <div class="col-md-6">
+                    <label asp-for="Member.LastName" class="form-label"></label>
+                    <input asp-for="Member.LastName" class="form-control" />
+                    <span asp-validation-for="Member.LastName" class="text-danger"></span>
+                </div>
+
+                <!-- Email -->
+                <div class="col-md-6">
+                    <label asp-for="Member.Email" class="form-label"></label>
+                    <input asp-for="Member.Email" class="form-control" />
+                    <span asp-validation-for="Member.Email" class="text-danger"></span>
+                </div>
+
+                <!-- Phone Number -->
+                <div class="col-md-6">
+                    <label asp-for="Member.PhoneNumber" class="form-label"></label>
+                    <input asp-for="Member.PhoneNumber" class="form-control" />
+                    <span asp-validation-for="Member.PhoneNumber" class="text-danger"></span>
+                </div>
+
+                <!-- Library Select -->
+                <div class="col-md-6">
+                    <label asp-for="Member.LibraryId" class="form-label">Library</label>
+                    <select asp-for="Member.LibraryId" class="form-select" asp-items="Model.LibraryList">
+                        <option value="">-- Select Library --</option>
+                    </select>
+                    <span asp-validation-for="Member.LibraryId" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="card-footer text-end mt-4 p-0">
+                <button type="submit" class="btn btn-primary me-2">Create</button>
+                <a asp-page="Index" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
     </div>
-
-    <div class="form-group mt-3">
-        <label asp-for="Member.Email"></label>
-        <input asp-for="Member.Email" class="form-control" />
-        <span asp-validation-for="Member.Email" class="text-danger"></span>
-    </div>
-
-    <div class="form-group mt-3">
-        <label asp-for="Member.PhoneNumber"></label>
-        <input asp-for="Member.PhoneNumber" class="form-control" />
-        <span asp-validation-for="Member.PhoneNumber" class="text-danger"></span>
-    </div>
-
-    <!-- NEW: Select Library -->
-    <div class="form-group mt-3">
-        <label asp-for="Member.LibraryId"></label>
-        <select asp-for="Member.LibraryId" asp-items="Model.LibraryList" class="form-control">
-            <option value="">-- Select a Library --</option>
-        </select>
-        <span asp-validation-for="Member.LibraryId" class="text-danger"></span>
-    </div>
-
-    <button type="submit" class="btn btn-success mt-3">Create</button>
-    <a asp-page="Index" class="btn btn-secondary mt-3">Cancel</a>
-</form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
+
+<style>
+    /* Card 3D hover effect */
+    .card {
+        transition: transform 0.3s;
+    }
+
+        .card:hover {
+            transform: perspective(800px) rotateX(3deg) rotateY(2deg);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+</style>
