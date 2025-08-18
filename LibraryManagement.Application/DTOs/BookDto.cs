@@ -9,6 +9,7 @@
         public int PublicationYear { get; set; }
         public bool IsAvailable { get; set; } = true;
         public int LibraryId { get; set; }           // Relación con Library
+        public string LibraryName { get; set; } = string.Empty;
     }
 
 }

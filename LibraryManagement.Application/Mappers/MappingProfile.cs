@@ -1,13 +1,12 @@
 ﻿using AutoMapper;
-using LibraryManagement.Core.Entities;
 using LibraryManagement.Application.DTOs;
+using LibraryManagement.Core.Entities;
 
 namespace LibraryManagement.Application.Mappers
 {
     /// <summary>
-    /// AutoMapper profile configuration for mapping between Entities and DTOs.
-    /// Includes bidirectional mappings and creation-specific mappings.
-    /// Now supports extended mapping for LoanDetailsDto to properly display Loan with related Member, Book, and Library info.
+    /// Configuración de AutoMapper para mapeo entre entidades y DTOs.
+    /// Incluye Books, Members, Loans y Libraries.
     /// </summary>
     public class MappingProfile : Profile
     {
@@ -18,11 +17,15 @@ namespace LibraryManagement.Application.Mappers
             // -------------------------------------------------
             CreateMap<Book, BookDto>()
                 .ForMember(dest => dest.LibraryId, opt => opt.MapFrom(src => src.LibraryId))
+                .ForMember(dest => dest.LibraryName, opt => opt.MapFrom(src => src.Library.Name))
                 .ReverseMap();
+
             CreateMap<Book, BookUpdateDto>()
                 .ForMember(dest => dest.LibraryId, opt => opt.MapFrom(src => src.LibraryId))
                 .ReverseMap();
+
             CreateMap<BookDto, BookUpdateDto>().ReverseMap();
+
             CreateMap<BookCreateDto, Book>()
                 .ForMember(dest => dest.LibraryId, opt => opt.MapFrom(src => src.LibraryId));
 
@@ -32,16 +35,17 @@ namespace LibraryManagement.Application.Mappers
             CreateMap<Member, MemberDto>()
                 .ForMember(dest => dest.LibraryId, opt => opt.MapFrom(src => src.LibraryId))
                 .ReverseMap();
+
             CreateMap<Member, MemberUpdateDto>()
                 .ForMember(dest => dest.LibraryId, opt => opt.MapFrom(src => src.LibraryId))
                 .ReverseMap();
+
             CreateMap<MemberCreateDto, Member>()
                 .ForMember(dest => dest.LibraryId, opt => opt.MapFrom(src => src.LibraryId));
 
             // -------------------------------------------------
             // Loans
             // -------------------------------------------------
-            // Map Loan entity to LoanDto
             CreateMap<Loan, LoanDto>()
                 .ForMember(dest => dest.BookTitle, opt => opt.MapFrom(src => src.Book.Title))
                 .ForMember(dest => dest.MemberFullName, opt => opt.MapFrom(src => src.Member.FirstName + " " + src.Member.LastName))
@@ -52,12 +56,10 @@ namespace LibraryManagement.Application.Mappers
             CreateMap<Loan, LoanUpdateDto>()
                 .ForMember(dest => dest.LibraryId, opt => opt.MapFrom(src => src.Book.LibraryId))
                 .ReverseMap();
+
             CreateMap<LoanCreateDto, Loan>();
 
-            // -------------------------------------------------
-            // NEW: LoanDetailsDto Mapping
-            // -------------------------------------------------
-            // Enables mapping for detailed view of a Loan including full Member, Book, and Library information
+            // LoanDetailsDto para vistas detalladas
             CreateMap<Loan, LoanDetailsDto>()
                 .ForMember(dest => dest.MemberFullName, opt => opt.MapFrom(src => src.Member.FirstName + " " + src.Member.LastName))
                 .ForMember(dest => dest.BookTitle, opt => opt.MapFrom(src => src.Book.Title))
