@@ -4,7 +4,7 @@
     ViewData["Title"] = "Edit Book";
 }
 
-<h1>Edit Book</h1>
+<h1 class="mb-4">Edit Book</h1>
 
 @if (Model.Book == null)
 {
@@ -15,61 +15,69 @@
 }
 else
 {
-    <form method="post">
-        <input type="hidden" asp-for="Book.Id" />
+    <!-- ============================= -->
+    <!-- Card container for Edit Form -->
+    <!-- ============================= -->
+    <div class="card shadow-lg rounded-3 p-4 mb-4" style="transform: perspective(800px) rotateX(1deg); background-color: #f8f9fa;">
+        <form method="post">
+            <input type="hidden" asp-for="Book.Id" />
 
-        <div class="mb-3">
-            <label asp-for="Book.Title" class="form-label"></label>
-            <input asp-for="Book.Title" class="form-control" />
-            <span asp-validation-for="Book.Title" class="text-danger"></span>
-        </div>
-
-        <div class="mb-3">
-            <label asp-for="Book.Author" class="form-label"></label>
-            <input asp-for="Book.Author" class="form-control" />
-            <span asp-validation-for="Book.Author" class="text-danger"></span>
-        </div>
-
-        <div class="mb-3">
-            <label asp-for="Book.ISBN" class="form-label"></label>
-            <input asp-for="Book.ISBN" class="form-control" />
-            <span asp-validation-for="Book.ISBN" class="text-danger"></span>
-        </div>
-
-        <!-- Slider for Publication Year -->
-        <div class="mb-3">
-            <div class="d-flex justify-content-between">
-                <label for="yearSlider">Publication Year</label>
-                <span id="yearValue" class="fw-bold">@Model.Book.PublicationYear</span>
+            <div class="mb-3">
+                <label asp-for="Book.Title" class="form-label fw-bold"></label>
+                <input asp-for="Book.Title" class="form-control" />
+                <span asp-validation-for="Book.Title" class="text-danger"></span>
             </div>
-            <input asp-for="Book.PublicationYear"
-                   type="range"
-                   min="1500"
-                   max="@DateTime.Now.Year"
-                   value="@Model.Book.PublicationYear"
-                   class="form-range"
-                   id="yearSlider"
-                   oninput="document.getElementById('yearValue').textContent = this.value" />
-            <span asp-validation-for="Book.PublicationYear" class="text-danger"></span>
-        </div>
 
-        <!-- Library dropdown -->
-        <div class="mb-3">
-            <label asp-for="Book.LibraryId" class="form-label"></label>
-            <select asp-for="Book.LibraryId" class="form-control" asp-items="Model.LibraryList">
-                <option value="">-- Select Library --</option>
-            </select>
-            <span asp-validation-for="Book.LibraryId" class="text-danger"></span>
-        </div>
+            <div class="mb-3">
+                <label asp-for="Book.Author" class="form-label fw-bold"></label>
+                <input asp-for="Book.Author" class="form-control" />
+                <span asp-validation-for="Book.Author" class="text-danger"></span>
+            </div>
 
-        <div class="mb-3 form-check">
-            <input asp-for="Book.IsAvailable" class="form-check-input" />
-            <label asp-for="Book.IsAvailable" class="form-check-label"></label>
-        </div>
+            <div class="mb-3">
+                <label asp-for="Book.ISBN" class="form-label fw-bold"></label>
+                <input asp-for="Book.ISBN" class="form-control" />
+                <span asp-validation-for="Book.ISBN" class="text-danger"></span>
+            </div>
 
-        <button type="submit" class="btn btn-primary">Save</button>
-        <a asp-page="Index" class="btn btn-secondary">Cancel</a>
-    </form>
+            <!-- Slider for Publication Year -->
+            <div class="mb-3">
+                <div class="d-flex justify-content-between">
+                    <label for="yearSlider" class="form-label fw-bold">Publication Year</label>
+                    <span id="yearValue" class="fw-bold">@Model.Book.PublicationYear</span>
+                </div>
+                <input asp-for="Book.PublicationYear"
+                       type="range"
+                       min="1500"
+                       max="@DateTime.Now.Year"
+                       value="@Model.Book.PublicationYear"
+                       class="form-range"
+                       id="yearSlider"
+                       oninput="document.getElementById('yearValue').textContent = this.value" />
+                <span asp-validation-for="Book.PublicationYear" class="text-danger"></span>
+            </div>
+
+            <!-- Library dropdown -->
+            <div class="mb-3">
+                <label asp-for="Book.LibraryId" class="form-label fw-bold"></label>
+                <select asp-for="Book.LibraryId" class="form-select" asp-items="Model.LibraryList">
+                    <option value="">-- Select Library --</option>
+                </select>
+                <span asp-validation-for="Book.LibraryId" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3 form-check">
+                <input asp-for="Book.IsAvailable" class="form-check-input" />
+                <label asp-for="Book.IsAvailable" class="form-check-label fw-bold"></label>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex gap-2 mt-3">
+                <button type="submit" class="btn btn-primary flex-grow-1">Save</button>
+                <a asp-page="Index" class="btn btn-secondary flex-grow-1">Cancel</a>
+            </div>
+        </form>
+    </div>
 }
 
 @section Scripts {
@@ -82,3 +90,15 @@ else
         });
     </script>
 }
+
+<style>
+    /* Card 3D hover effect */
+    .card {
+        transition: transform 0.3s;
+    }
+
+        .card:hover {
+            transform: perspective(800px) rotateX(3deg) rotateY(2deg);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+</style>
