@@ -32,25 +32,11 @@ namespace LibraryManagement.Web.Pages.Loans
             _validator = validator;
         }
 
-        /// <summary>
-        /// Bound property for Loan update.
-        /// </summary>
         [BindProperty]
         public LoanUpdateDto Loan { get; set; } = new LoanUpdateDto();
 
-        /// <summary>
-        /// SelectList for books dropdown.
-        /// </summary>
         public IEnumerable<SelectListItem> Books { get; set; } = new List<SelectListItem>();
-
-        /// <summary>
-        /// SelectList for members (read-only).
-        /// </summary>
         public IEnumerable<SelectListItem> Members { get; set; } = new List<SelectListItem>();
-
-        /// <summary>
-        /// Library name display (read-only).
-        /// </summary>
         public string LibraryName { get; set; } = string.Empty;
 
         /// <summary>
@@ -59,11 +45,10 @@ namespace LibraryManagement.Web.Pages.Loans
         /// </summary>
         public async Task<IActionResult> OnGetAsync(int id)
         {
-            // Get loan with details
             var loanDto = await _loanService.GetByIdWithDetailsAsync(id);
             if (loanDto == null) return NotFound();
 
-            // Map LoanDto to LoanUpdateDto
+            // Map LoanDto → LoanUpdateDto including LoanDate
             Loan = new LoanUpdateDto
             {
                 Id = loanDto.Id,
@@ -71,16 +56,15 @@ namespace LibraryManagement.Web.Pages.Loans
                 MemberId = loanDto.MemberId,
                 BookId = loanDto.BookId,
                 DueDate = loanDto.DueDate,
-                ReturnDate = loanDto.ReturnDate
+                ReturnDate = loanDto.ReturnDate,
+                LoanDate = loanDto.LoanDate
             };
 
             LibraryName = loanDto.LibraryName;
 
-            // Populate books dropdown
             Books = (await _bookService.GetAllAsync())
                 .Select(b => new SelectListItem(b.Title, b.Id.ToString(), b.Id == Loan.BookId));
 
-            // Populate member info (read-only)
             Members = new List<SelectListItem>
             {
                 new SelectListItem($"{loanDto.MemberFullName}", loanDto.MemberId.ToString(), true)
@@ -91,10 +75,16 @@ namespace LibraryManagement.Web.Pages.Loans
 
         /// <summary>
         /// Handle form submission to update loan.
-        /// Sets Book to available if ReturnDate is provided.
+        /// Loads LoanDate before validating to ensure ReturnDate is validated correctly.
         /// </summary>
         public async Task<IActionResult> OnPostAsync()
         {
+            // Reload LoanDate from database before validation
+            var loanFromDb = await _loanService.GetByIdWithDetailsAsync(Loan.Id);
+            if (loanFromDb == null) return NotFound();
+
+            Loan.LoanDate = loanFromDb.LoanDate;
+
             // Validate using FluentValidation
             ValidationResult result = _validator.Validate(Loan);
             if (!result.IsValid)
@@ -104,7 +94,7 @@ namespace LibraryManagement.Web.Pages.Loans
                     ModelState.AddModelError(string.Empty, error.ErrorMessage);
                 }
 
-                // Reload dropdowns in case of validation errors
+                // Reload dropdowns
                 await OnGetAsync(Loan.Id);
                 return Page();
             }

@@ -68,7 +68,9 @@
     <!-- ============================= -->
     <div class="form-group mt-3">
         <label asp-for="Loan.ReturnDate" class="form-label">Return Date</label>
-        <input asp-for="Loan.ReturnDate" type="date" class="form-control" />
+        <input asp-for="Loan.ReturnDate" type="date" class="form-control"
+               min="@Model.Loan.LoanDate.ToString("yyyy-MM-dd")"
+               max="@DateTime.Today.ToString("yyyy-MM-dd")" />
         <span asp-validation-for="Loan.ReturnDate" class="text-danger"></span>
     </div>
 
