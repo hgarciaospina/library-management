@@ -4,7 +4,7 @@
     ViewData["Title"] = "Library Details";
 }
 
-<h1>Library Details</h1>
+<h1 class="mb-4">Library Details</h1>
 
 @if (Model.Library == null)
 {
@@ -15,21 +15,48 @@
 }
 else
 {
-    <div>
-        <dl class="row">
-            <dt class="col-sm-2">ID</dt>
-            <dd class="col-sm-10">@Model.Library.Id</dd>
+    <!-- ============================= -->
+    <!-- Card container for Library Details -->
+    <!-- ============================= -->
+    <div class="card shadow-lg rounded-3 p-4 mb-4" style="transform: perspective(800px) rotateX(1deg); background-color: #f8f9fa;">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Library Info</h4>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3 fw-bold">ID</dt>
+                <dd class="col-sm-9">@Model.Library.Id</dd>
 
-            <dt class="col-sm-2">Name</dt>
-            <dd class="col-sm-10">@Model.Library.Name</dd>
+                <dt class="col-sm-3 fw-bold">Name</dt>
+                <dd class="col-sm-9">@Model.Library.Name</dd>
 
-            <dt class="col-sm-2">Address</dt>
-            <dd class="col-sm-10">@Model.Library.Address</dd>
-        </dl>
-    </div>
+                <dt class="col-sm-3 fw-bold">Address</dt>
+                <dd class="col-sm-9">@Model.Library.Address</dd>
+            </dl>
+        </div>
 
-    <div>
-        <a asp-page="Edit" asp-route-id="@Model.Library.Id" class="btn btn-primary">Edit</a>
-        <a asp-page="Index" class="btn btn-secondary">Back to List</a>
+        <!-- ============================= -->
+        <!-- Action Buttons -->
+        <!-- ============================= -->
+        <div class="card-footer d-flex gap-2 justify-content-end">
+            <a asp-page="Edit" asp-route-id="@Model.Library.Id" class="btn btn-warning">Edit</a>
+            <a asp-page="Index" class="btn btn-secondary">Back to List</a>
+        </div>
     </div>
 }
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+<style>
+    /* Card 3D hover effect */
+    .card {
+        transition: transform 0.3s;
+    }
+
+        .card:hover {
+            transform: perspective(800px) rotateX(3deg) rotateY(2deg);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+</style>
