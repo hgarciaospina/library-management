@@ -6,28 +6,79 @@
 
 <h2>Delete Loan</h2>
 
-<h4>Are you sure you want to delete this loan?</h4>
+<p>Are you sure you want to delete this loan?</p>
 
-<div>
-    <dl class="row">
-        <dt class="col-sm-2">Book</dt>
-        <dd class="col-sm-10">@Model.Loan.BookTitle</dd>
+<!-- ============================= -->
+<!-- Loan Details Card -->
+<!-- ============================= -->
+<div class="card mb-3">
+    <div class="card-header">
+        Loan Details
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Book Title</dt>
+            <dd class="col-sm-9">@Model.Loan.BookTitle</dd>
 
-        <dt class="col-sm-2">Member</dt>
-        <dd class="col-sm-10">@Model.Loan.MemberFullName</dd>
+            <dt class="col-sm-3">Book ISBN</dt>
+            <dd class="col-sm-9">@Model.Loan.BookISBN</dd>
 
-        <dt class="col-sm-2">Loan Date</dt>
-        <dd class="col-sm-10">@Model.Loan.LoanDate.ToShortDateString()</dd>
+            <dt class="col-sm-3">Member</dt>
+            <dd class="col-sm-9">@Model.Loan.MemberFullName</dd>
 
-        <dt class="col-sm-2">Due Date</dt>
-        <dd class="col-sm-10">@Model.Loan.DueDate.ToShortDateString()</dd>
+            <dt class="col-sm-3">Library</dt>
+            <dd class="col-sm-9">@Model.Loan.LibraryName</dd>
 
-        <dt class="col-sm-2">Return Date</dt>
-        <dd class="col-sm-10">@Model.Loan.ReturnDate?.ToShortDateString()</dd>
-    </dl>
+            <dt class="col-sm-3">Loan Date</dt>
+            <dd class="col-sm-9">@Model.Loan.LoanDate.ToShortDateString()</dd>
+
+            <dt class="col-sm-3">Due Date</dt>
+            <dd class="col-sm-9">@Model.Loan.DueDate.ToShortDateString()</dd>
+
+            <dt class="col-sm-3">Return Date</dt>
+            <dd class="col-sm-9">@Model.Loan.ReturnDate?.ToShortDateString()</dd>
+        </dl>
+    </div>
 </div>
 
-<form method="post">
-    <button type="submit" class="btn btn-danger">Delete</button>
-    <a asp-page="Index" class="btn btn-secondary">Cancel</a>
-</form>
+<!-- ============================= -->
+<!-- Delete Confirmation Modal Trigger -->
+<!-- ============================= -->
+<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+    Delete
+</button>
+<a asp-page="Index" asp-route-libraryId="@Model.Loan.LibraryId" class="btn btn-secondary">Cancel</a>
+
+<!-- ============================= -->
+<!-- Delete Confirmation Modal -->
+<!-- ============================= -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to permanently delete this loan?
+            </div>
+            <div class="modal-footer">
+                <form method="post">
+                    <!-- ============================= -->
+                    <!-- Pass both Loan Id and LibraryId to POST -->
+                    <!-- This ensures redirection goes to the correct library index -->
+                    <!-- ============================= -->
+                    <input type="hidden" name="Loan.Id" value="@Model.Loan.Id" />
+                    <input type="hidden" name="Loan.LibraryId" value="@Model.Loan.LibraryId" />
+                    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                </form>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Required scripts for Bootstrap modal -->
+    <partial name="_ValidationScriptsPartial" />
+}

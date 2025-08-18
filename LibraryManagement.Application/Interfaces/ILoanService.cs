@@ -18,6 +18,13 @@ namespace LibraryManagement.Application.Interfaces
         Task<IEnumerable<LoanDto>> GetAllAsync();
 
         /// <summary>
+        /// Retrieves all loans including related Book, Member, and Library details.
+        /// Returns LoanDetailsDto so that LibraryName is available for display.
+        /// </summary>
+        Task<IEnumerable<LoanDetailsDto>> GetAllDetailsAsync();
+
+
+        /// <summary>
         /// Retrieves a single loan by its unique ID without related entities.
         /// </summary>
         /// <param name="id">The unique identifier of the loan.</param>

@@ -9,10 +9,10 @@
     <h2>@ViewData["Title"]</h2>
 
     @* Display selected library name on the right if LibraryId is set *@
-    @if (Model.LibraryId.HasValue && Model.Loans.Any())
+    @if (Model.SelectedLibraryName != null)
     {
         <span class="badge bg-primary fs-5 py-2 px-3">
-            @Model.Loans.First().LibraryName
+            @Model.SelectedLibraryName
         </span>
     }
 </div>
@@ -26,7 +26,6 @@
 }
 else
 {
-    @* Fallback if no library is selected; allows user to pick a library in Create page *@
     <a asp-page="Create" class="btn btn-success mb-3">Create New Loan</a>
 }
 
@@ -45,8 +44,8 @@ else
         @foreach (var loan in Model.Loans)
         {
             <tr>
-                <td>@loan.BookTitle</td>  @* Filled from LoanDto via AutoMapper *@
-                <td>@loan.MemberFullName</td>  @* Filled from LoanDto via AutoMapper *@
+                <td>@loan.BookTitle</td>
+                <td>@loan.MemberFullName</td>
                 <td>@loan.LoanDate.ToShortDateString()</td>
                 <td>@loan.DueDate.ToShortDateString()</td>
                 <td>@loan.ReturnDate?.ToShortDateString()</td>

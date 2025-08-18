@@ -66,6 +66,26 @@ namespace LibraryManagement.Application.Services
             return _mapper.Map<IEnumerable<LoanDto>>(orderedLoans);
         }
 
+        // -----------------------------
+        // New method for Index
+        // -----------------------------
+        public async Task<IEnumerable<LoanDetailsDto>> GetAllDetailsAsync()
+        {
+            // Get all loans including Book -> Library and Member
+            var loans = await _loanRepository.GetAllIncludingAsync(
+                l => l.Book,
+                l => l.Book.Library,
+                l => l.Member
+            );
+
+            // Map to LoanDetailsDto
+            return _mapper.Map<IEnumerable<LoanDetailsDto>>(loans);
+        }
+
+
+
+
+
         /// <summary>
         /// Retrieves a single loan by ID including related Book, Member, and Library entities.
         /// </summary>
