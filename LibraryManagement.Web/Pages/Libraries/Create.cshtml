@@ -4,25 +4,46 @@
     ViewData["Title"] = "Add Library";
 }
 
-<h1>Add Library</h1>
+<h1 class="mb-4">Add Library</h1>
 
-<form method="post">
-    <div class="form-group">
-        <label asp-for="Library.Name"></label>
-        <input asp-for="Library.Name" class="form-control" />
-        <span asp-validation-for="Library.Name" class="text-danger"></span>
+<div class="card shadow-lg rounded-3 p-4" style="transform: perspective(800px) rotateX(1deg);">
+    <div class="card-header bg-success text-white">
+        <h4 class="mb-0">New Library</h4>
     </div>
+    <div class="card-body">
+        <form method="post">
+            <div class="mb-3">
+                <label asp-for="Library.Name" class="form-label"></label>
+                <input asp-for="Library.Name" class="form-control" />
+                <span asp-validation-for="Library.Name" class="text-danger"></span>
+            </div>
 
-    <div class="form-group">
-        <label asp-for="Library.Address"></label>
-        <input asp-for="Library.Address" class="form-control" />
-        <span asp-validation-for="Library.Address" class="text-danger"></span>
+            <div class="mb-3">
+                <label asp-for="Library.Address" class="form-label"></label>
+                <input asp-for="Library.Address" class="form-control" />
+                <span asp-validation-for="Library.Address" class="text-danger"></span>
+            </div>
+
+            <div class="card-footer text-end p-0 mt-3">
+                <button type="submit" class="btn btn-success me-2">Save</button>
+                <a asp-page="Index" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
     </div>
-
-    <button type="submit" class="btn btn-success mt-2">Save</button>
-    <a asp-page="Index" class="btn btn-secondary mt-2">Cancel</a>
-</form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
+
+<style>
+    /* Add subtle 3D hover effect like Loans */
+    .card {
+        transition: transform 0.3s;
+    }
+
+        .card:hover {
+            transform: perspective(800px) rotateX(3deg) rotateY(2deg);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+</style>
