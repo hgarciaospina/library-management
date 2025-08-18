@@ -4,29 +4,55 @@
     ViewData["Title"] = "Loan Details";
 }
 
-<h1>Loan Details</h1>
+<h1 class="mb-4">Loan Details</h1>
 
-<div>
-    <dl class="row">
-        <dt class="col-sm-2">ID</dt>
-        <dd class="col-sm-10">@Model.Loan.Id</dd>
-
-        <dt class="col-sm-2">Book ID</dt>
-        <dd class="col-sm-10">@Model.Loan.BookId</dd>
-
-        <dt class="col-sm-2">Member ID</dt>
-        <dd class="col-sm-10">@Model.Loan.MemberId</dd>
-
-        <dt class="col-sm-2">Loan Date</dt>
-        <dd class="col-sm-10">@Model.Loan.LoanDate.ToShortDateString()</dd>
-
-        <dt class="col-sm-2">Due Date</dt>
-        <dd class="col-sm-10">@Model.Loan.DueDate.ToShortDateString()</dd>
-
-        <dt class="col-sm-2">Return Date</dt>
-        <dd class="col-sm-10">@Model.Loan.ReturnDate?.ToShortDateString() ?? "-"</dd>
-    </dl>
+<div class="card shadow-lg rounded-3 p-4" style="transform: perspective(800px) rotateX(1deg);">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">Loan ID: @Model.Loan.Id</h4>
+    </div>
+    <div class="card-body">
+        <div class="row mb-2">
+            <div class="col-md-6">
+                <strong>Member:</strong> @Model.Loan.MemberFullName
+            </div>
+            <div class="col-md-6">
+                <strong>Library:</strong> @Model.Loan.LibraryName
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-md-6">
+                <strong>Book:</strong> @Model.Loan.BookTitle
+            </div>
+            <div class="col-md-6">
+                <strong>ISBN:</strong> @Model.Loan.BookISBN
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-md-4">
+                <strong>Loan Date:</strong> @Model.Loan.LoanDate.ToString("dd/MM/yyyy")
+            </div>
+            <div class="col-md-4">
+                <strong>Due Date:</strong> @Model.Loan.DueDate.ToString("dd/MM/yyyy")
+            </div>
+            <div class="col-md-4">
+                <strong>Return Date:</strong> @(Model.Loan.ReturnDate?.ToString("dd/MM/yyyy") ?? "-")
+            </div>
+        </div>
+    </div>
+    <div class="card-footer text-end">
+        <a asp-page="Edit" asp-route-id="@Model.Loan.Id" class="btn btn-warning me-2">Edit</a>
+        <a asp-page="Index" asp-route-libraryId="@Model.Loan.LibraryId" class="btn btn-secondary">Back to Library Loans</a>
+    </div>
 </div>
 
-<a asp-page="Edit" asp-route-id="@Model.Loan.Id" class="btn btn-primary">Edit</a>
-<a asp-page="Index" class="btn btn-secondary">Back to List</a>
+<style>
+    /* Add subtle 3D effect */
+    .card {
+        transition: transform 0.3s;
+    }
+
+        .card:hover {
+            transform: perspective(800px) rotateX(3deg) rotateY(2deg);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+</style>

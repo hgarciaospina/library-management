@@ -6,45 +6,64 @@ namespace LibraryManagement.Application.Interfaces
 {
     /// <summary>
     /// Service interface for managing Loans.
-    /// Provides methods for CRUD operations and fetching loans with related data.
+    /// Provides methods for CRUD operations and fetching loans with related entities.
     /// </summary>
     public interface ILoanService
     {
         /// <summary>
-        /// Get all loans without including related entities.
+        /// Retrieves all loans without including related entities.
+        /// Useful for lightweight operations where related data is not needed.
         /// </summary>
+        /// <returns>A collection of LoanDto representing all loans.</returns>
         Task<IEnumerable<LoanDto>> GetAllAsync();
 
         /// <summary>
-        /// Get a single loan by its ID without including related entities.
+        /// Retrieves a single loan by its unique ID without related entities.
         /// </summary>
-        Task<LoanDto> GetByIdAsync(int id);
+        /// <param name="id">The unique identifier of the loan.</param>
+        /// <returns>A LoanDto representing the loan if found; otherwise, null.</returns>
+        Task<LoanDto?> GetByIdAsync(int id);
 
         /// <summary>
-        /// Get a single loan by its ID including related Book, Member, and Library entities.
-        /// This ensures that LibraryId and LibraryName are available for display or redirects.
+        /// Retrieves a single loan by its unique ID including related Book, Member, and Library entities.
+        /// Ensures LibraryId and LibraryName are available for display or redirects.
         /// </summary>
-        Task<LoanDto> GetByIdWithDetailsAsync(int id);
+        /// <param name="id">The unique identifier of the loan.</param>
+        /// <returns>A LoanDto representing the loan with related details.</returns>
+        Task<LoanDto?> GetByIdWithDetailsAsync(int id);
 
         /// <summary>
-        /// Create a new loan.
+        /// Creates a new loan record.
         /// </summary>
+        /// <param name="dto">The DTO containing data needed to create the loan.</param>
+        /// <returns>The created LoanDto including its generated ID.</returns>
         Task<LoanDto> CreateAsync(LoanCreateDto dto);
 
         /// <summary>
-        /// Get all loans including related Book and Member entities.
-        /// Useful for displaying in views with full details.
+        /// Retrieves all loans including related Book and Member entities.
+        /// Useful for displaying full details in views.
         /// </summary>
+        /// <returns>A collection of LoanDto representing all loans with full details.</returns>
         Task<IEnumerable<LoanDto>> GetAllWithDetailsAsync();
 
         /// <summary>
-        /// Update an existing loan.
+        /// Updates an existing loan record.
         /// </summary>
+        /// <param name="dto">The DTO containing updated loan data.</param>
         Task UpdateAsync(LoanUpdateDto dto);
 
         /// <summary>
-        /// Delete a loan by ID.
+        /// Deletes a loan by its unique ID.
         /// </summary>
+        /// <param name="id">The unique identifier of the loan to delete.</param>
         Task DeleteAsync(int id);
+
+        /// <summary>
+        /// Retrieves a single loan with full details for the Details page.
+        /// Includes member full name, book title & ISBN, library info, and all loan dates.
+        /// </summary>
+        /// <param name="id">The unique identifier of the loan.</param>
+        /// <returns>A LoanDetailsDto if found; otherwise, null.</returns>
+        Task<LoanDetailsDto?> GetDetailsByIdAsync(int id);
     }
 }
