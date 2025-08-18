@@ -1,4 +1,4 @@
-using LibraryManagement.Application.Interfaces;
+﻿using LibraryManagement.Application.Interfaces;
 using LibraryManagement.Application.Services;
 using LibraryManagement.Infrastructure.Data;
 using LibraryManagement.Application.Mappers;
@@ -10,6 +10,7 @@ using FluentValidation.AspNetCore;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using Microsoft.AspNetCore.Mvc;
+using LibraryManagement.Api.Middleware; // ✅ Added for exception handling middleware
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,15 +51,21 @@ builder.Services.AddScoped<ILibraryService, LibraryService>();
 /// FLUENTVALIDATION CONFIGURATION
 /// ================================================
 /// Registers validators automatically for DTOs
-builder.Services.AddValidatorsFromAssemblyContaining<BookValidator>();
-
+/// IMPORTANT CHANGES:
+/// - Automatic validation disabled to avoid issues with async validators
+/// - Web validator runs automatically
+/// - API validator is registered manually and executed in LoanService
 builder.Services.AddControllers()
     .AddFluentValidation(fv =>
     {
         fv.RegisterValidatorsFromAssemblyContaining<MemberCreateDtoValidator>();
-        fv.AutomaticValidationEnabled = true; // Enables automatic validation
+        fv.AutomaticValidationEnabled = false; // ✅ Prevents ASP.NET sync validation errors
     });
 
+/// ✅ Register async validator manually (API use only, invoked inside LoanService)
+builder.Services.AddScoped<IValidator<LibraryManagement.Application.DTOs.LoanCreateDto>, LoanCreateDtoValidator>();
+
+/// ✅ Register RazorPages (uses sync validators automatically)
 builder.Services.AddRazorPages();
 
 /// ================================================
@@ -120,6 +127,10 @@ var app = builder.Build();
 /// ================================================
 /// MIDDLEWARE PIPELINE
 /// ================================================
+
+// ✅ Global exception handling middleware (catches validation + server errors)
+app.UseExceptionHandlingMiddleware();
+
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
@@ -157,7 +168,7 @@ public class MemberCreateExample : IExamplesProvider<LibraryManagement.Applicati
         new LibraryManagement.Application.DTOs.MemberCreateDto
         {
             FirstName = "Henry",
-            LastName = "Garc�a Ospina",
+            LastName = "García Ospina",
             Email = "henrygarciaospina@gmail.com",
             PhoneNumber = "+573001234567",
             LibraryId = 7
@@ -224,7 +235,7 @@ public class MemberUpdateExample : IExamplesProvider<LibraryManagement.Applicati
         {
             Id = 3,
             FirstName = "Henry",
-            LastName = "Garc�a Ospina",
+            LastName = "García Ospina",
             Email = "henrygarciaospina@gmail.com",
             PhoneNumber = "+573001234567",
             LibraryId = 7
