@@ -4,25 +4,52 @@
     ViewData["Title"] = "Book Details";
 }
 
-<h2>Book Details</h2>
+<h1 class="mb-4">Book Details</h1>
 
-<div>
-    <dl class="row">
-        <dt class="col-sm-2">Title</dt>
-        <dd class="col-sm-10">@Model.Book.Title</dd>
-
-        <dt class="col-sm-2">Author</dt>
-        <dd class="col-sm-10">@Model.Book.Author</dd>
-
-        <dt class="col-sm-2">ISBN</dt>
-        <dd class="col-sm-10">@Model.Book.ISBN</dd>
-
-        <dt class="col-sm-2">Publication Year</dt>
-        <dd class="col-sm-10">@Model.Book.PublicationYear</dd>
-
-        <dt class="col-sm-2">Available</dt>
-        <dd class="col-sm-10">@Model.Book.IsAvailable</dd>
-    </dl>
+<div class="card shadow-lg rounded-3 p-4" style="transform: perspective(800px) rotateX(1deg);">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">Book ID: @Model.Book.Id</h4>
+    </div>
+    <div class="card-body">
+        <div class="row mb-2">
+            <div class="col-md-6">
+                <strong>Title:</strong> @Model.Book.Title
+            </div>
+            <div class="col-md-6">
+                <strong>Author:</strong> @Model.Book.Author
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-md-6">
+                <strong>ISBN:</strong> @Model.Book.ISBN
+            </div>
+            <div class="col-md-6">
+                <strong>Publication Year:</strong> @Model.Book.PublicationYear
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-md-6">
+                <strong>Available:</strong> @(Model.Book.IsAvailable ? "Yes" : "No")
+            </div>
+            <div class="col-md-6">
+                <strong>Library:</strong> @Model.Book.LibraryName
+            </div>
+        </div>
+    </div>
+    <div class="card-footer text-end">
+        <a asp-page="Edit" asp-route-id="@Model.Book.Id" class="btn btn-warning me-2">Edit</a>
+        <a asp-page="Index" asp-route-libraryId="@Model.Book.LibraryId" class="btn btn-secondary">Back to Library Books</a>
+    </div>
 </div>
 
-<a asp-page="Index" class="btn btn-secondary">Back to List</a>
+<style>
+    /* Add subtle 3D hover effect like Loans */
+    .card {
+        transition: transform 0.3s;
+    }
+
+        .card:hover {
+            transform: perspective(800px) rotateX(3deg) rotateY(2deg);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+</style>
