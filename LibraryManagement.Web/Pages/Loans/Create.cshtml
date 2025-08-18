@@ -4,76 +4,79 @@
     ViewData["Title"] = "Create Loan";
 }
 
-<h2>Create Loan</h2>
+<h1 class="mb-4">Create Loan</h1>
 
-<!-- ============================= -->
-<!-- Card container for 3D effect -->
-<!-- ============================= -->
-<div class="card shadow-sm p-4 mb-4 border-0" style="border-radius: 12px; background-color: #f8f9fa;">
-    <form method="post">
-        <!-- ============================= -->
-        <!-- Library read-only information -->
-        <!-- ============================= -->
-        <div class="form-group mb-3">
-            <label class="form-label fw-bold">Library</label>
-            <input type="text" class="form-control bg-light" value="@Model.SelectedLibraryName" readonly />
-            <input type="hidden" asp-for="Loan.LibraryId" />
-        </div>
+<div class="card shadow-lg rounded-3 p-4" style="transform: perspective(800px) rotateX(1deg);">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">New Loan</h4>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            <!-- Library read-only information -->
+            <div class="mb-3">
+                <label class="form-label fw-bold">Library</label>
+                <input type="text" class="form-control bg-light" value="@Model.SelectedLibraryName" readonly />
+                <input type="hidden" asp-for="Loan.LibraryId" />
+            </div>
 
-        <!-- ============================= -->
-        <!-- Books dropdown -->
-        <!-- ============================= -->
-        <div class="form-group mb-3">
-            <label asp-for="Loan.BookId" class="form-label fw-bold">Book</label>
-            <select asp-for="Loan.BookId" class="form-select">
-                <option value="">-- Select a Book --</option>
-                @foreach (var book in Model.Books)
-                {
-                    <option value="@book.Id">@book.Title</option>
-                }
-            </select>
-            <span asp-validation-for="Loan.BookId" class="text-danger"></span>
-        </div>
+            <!-- Books dropdown -->
+            <div class="mb-3">
+                <label asp-for="Loan.BookId" class="form-label fw-bold">Book</label>
+                <select asp-for="Loan.BookId" class="form-select">
+                    <option value="">-- Select a Book --</option>
+                    @foreach (var book in Model.Books)
+                    {
+                        <option value="@book.Id">@book.Title</option>
+                    }
+                </select>
+                <span asp-validation-for="Loan.BookId" class="text-danger"></span>
+            </div>
 
-        <!-- ============================= -->
-        <!-- Members dropdown -->
-        <!-- ============================= -->
-        <div class="form-group mb-3">
-            <label asp-for="Loan.MemberId" class="form-label fw-bold">Member</label>
-            <select asp-for="Loan.MemberId" class="form-select">
-                <option value="">-- Select a Member --</option>
-                @foreach (var member in Model.Members)
-                {
-                    <option value="@member.Id">@member.FullName</option>
-                }
-            </select>
-            <span asp-validation-for="Loan.MemberId" class="text-danger"></span>
-        </div>
+            <!-- Members dropdown -->
+            <div class="mb-3">
+                <label asp-for="Loan.MemberId" class="form-label fw-bold">Member</label>
+                <select asp-for="Loan.MemberId" class="form-select">
+                    <option value="">-- Select a Member --</option>
+                    @foreach (var member in Model.Members)
+                    {
+                        <option value="@member.Id">@member.FullName</option>
+                    }
+                </select>
+                <span asp-validation-for="Loan.MemberId" class="text-danger"></span>
+            </div>
 
-        <!-- ============================= -->
-        <!-- Due Date -->
-        <!-- ============================= -->
-        <div class="form-group mb-3">
-            <label asp-for="Loan.DueDate" class="form-label fw-bold">Due Date</label>
-            <input asp-for="Loan.DueDate"
-                   type="date"
-                   class="form-control"
-                   onkeydown="return false"
-                   min="@DateTime.Now.ToString("yyyy-MM-dd")" />
-            <span asp-validation-for="Loan.DueDate" class="text-danger"></span>
-        </div>
+            <!-- Due Date -->
+            <div class="mb-3">
+                <label asp-for="Loan.DueDate" class="form-label fw-bold">Due Date</label>
+                <input asp-for="Loan.DueDate"
+                       type="date"
+                       class="form-control"
+                       onkeydown="return false"
+                       min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                <span asp-validation-for="Loan.DueDate" class="text-danger"></span>
+            </div>
 
-        <!-- ============================= -->
-        <!-- Action buttons -->
-        <!-- ============================= -->
-        <div class="d-flex gap-2 mt-4">
-            <button type="submit" class="btn btn-primary flex-grow-1">Create</button>
-            <a asp-page="Index" asp-route-libraryId="@Model.Loan.LibraryId" class="btn btn-secondary flex-grow-1">Cancel</a>
-        </div>
-    </form>
+            <!-- Action buttons in card footer -->
+            <div class="card-footer text-end p-0 mt-3">
+                <button type="submit" class="btn btn-primary me-2">Create</button>
+                <a asp-page="Index" asp-route-libraryId="@Model.Loan.LibraryId" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
 </div>
 
 @section Scripts {
-    <!-- Enable client-side validation scripts -->
     <partial name="_ValidationScriptsPartial" />
 }
+
+<style>
+    /* Add subtle 3D hover effect */
+    .card {
+        transition: transform 0.3s;
+    }
+
+        .card:hover {
+            transform: perspective(800px) rotateX(3deg) rotateY(2deg);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+</style>
