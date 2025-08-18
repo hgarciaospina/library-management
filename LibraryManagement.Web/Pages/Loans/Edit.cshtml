@@ -4,91 +4,103 @@
     ViewData["Title"] = "Edit Loan";
 }
 
-<h2>Edit Loan</h2>
+<h1 class="mb-4">Edit Loan</h1>
 
-<!-- ============================= -->
-<!-- Card container for 3D effect -->
-<!-- ============================= -->
-<div class="card shadow-sm p-4 mb-4 border-0" style="border-radius: 12px; background-color: #f8f9fa;">
-    <form method="post">
-        <!-- ============================= -->
-        <!-- Loan ID (hidden) -->
-        <!-- ============================= -->
-        <input type="hidden" asp-for="Loan.Id" />
-
-        <!-- ============================= -->
-        <!-- Library read-only information -->
-        <!-- ============================= -->
-        <div class="form-group mb-3">
-            <label class="form-label fw-bold">Library</label>
-            <input type="text" class="form-control bg-light" value="@Model.LibraryName" readonly />
-            <input type="hidden" asp-for="Loan.LibraryId" />
+@if (Model.Loan == null)
+{
+    <div class="alert alert-warning">
+        Loan not found.
+    </div>
+    <a asp-page="Index" class="btn btn-secondary">Back to List</a>
+}
+else
+{
+    <!-- ============================= -->
+    <!-- Card container -->
+    <!-- ============================= -->
+    <div class="card shadow-lg rounded-3 p-4 mb-4" style="background-color: #f8f9fa; transform: perspective(800px) rotateX(1deg);">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Loan Information</h4>
         </div>
+        <div class="card-body">
+            <form method="post">
+                <!-- Loan ID hidden -->
+                <input type="hidden" asp-for="Loan.Id" />
 
-        <!-- ============================= -->
-        <!-- Member read-only information -->
-        <!-- ============================= -->
-        <div class="form-group mb-3">
-            <label class="form-label fw-bold">Member</label>
-            <select class="form-select bg-light" disabled>
-                @foreach (var member in Model.Members)
-                {
-                    <option value="@member.Value" selected="@(member.Selected ? "selected" : null)">
-                        @member.Text
-                    </option>
-                }
-            </select>
-            <input type="hidden" asp-for="Loan.MemberId" /> @* Preserve MemberId in POST *@
-        </div>
+                <!-- Library read-only -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Library</label>
+                    <input type="text" class="form-control bg-light" value="@Model.LibraryName" readonly />
+                    <input type="hidden" asp-for="Loan.LibraryId" />
+                </div>
 
-        <!-- ============================= -->
-        <!-- Book selection -->
-        <!-- ============================= -->
-        <div class="form-group mb-3">
-            <label asp-for="Loan.BookId" class="form-label fw-bold">Book</label>
-            <select asp-for="Loan.BookId" class="form-select">
-                <option value="">-- Select Book --</option>
-                @foreach (var book in Model.Books)
-                {
-                    <option value="@book.Value" selected="@(book.Selected ? "selected" : null)">
-                        @book.Text
-                    </option>
-                }
-            </select>
-            <span asp-validation-for="Loan.BookId" class="text-danger"></span>
-        </div>
+                <!-- Member read-only -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Member</label>
+                    <select class="form-select bg-light" disabled>
+                        @foreach (var member in Model.Members)
+                        {
+                            <option value="@member.Value" selected="@(member.Selected ? "selected" : null)">
+                                @member.Text
+                            </option>
+                        }
+                    </select>
+                    <input type="hidden" asp-for="Loan.MemberId" />
+                </div>
 
-        <!-- ============================= -->
-        <!-- Due Date -->
-        <!-- ============================= -->
-        <div class="form-group mb-3">
-            <label asp-for="Loan.DueDate" class="form-label fw-bold">Due Date</label>
-            <input asp-for="Loan.DueDate" type="date" class="form-control" />
-            <span asp-validation-for="Loan.DueDate" class="text-danger"></span>
-        </div>
+                <!-- Book selection -->
+                <div class="mb-3">
+                    <label asp-for="Loan.BookId" class="form-label fw-bold">Book</label>
+                    <select asp-for="Loan.BookId" class="form-select">
+                        <option value="">-- Select Book --</option>
+                        @foreach (var book in Model.Books)
+                        {
+                            <option value="@book.Value" selected="@(book.Selected ? "selected" : null)">
+                                @book.Text
+                            </option>
+                        }
+                    </select>
+                    <span asp-validation-for="Loan.BookId" class="text-danger"></span>
+                </div>
 
-        <!-- ============================= -->
-        <!-- Return Date -->
-        <!-- ============================= -->
-        <div class="form-group mb-3">
-            <label asp-for="Loan.ReturnDate" class="form-label fw-bold">Return Date</label>
-            <input asp-for="Loan.ReturnDate" type="date" class="form-control"
-                   min="@Model.Loan.LoanDate.ToString("yyyy-MM-dd")"
-                   max="@DateTime.Today.ToString("yyyy-MM-dd")" />
-            <span asp-validation-for="Loan.ReturnDate" class="text-danger"></span>
-        </div>
+                <!-- Due Date -->
+                <div class="mb-3">
+                    <label asp-for="Loan.DueDate" class="form-label fw-bold">Due Date</label>
+                    <input asp-for="Loan.DueDate" type="date" class="form-control" />
+                    <span asp-validation-for="Loan.DueDate" class="text-danger"></span>
+                </div>
 
-        <!-- ============================= -->
-        <!-- Action buttons -->
-        <!-- ============================= -->
-        <div class="d-flex gap-2 mt-4">
-            <button type="submit" class="btn btn-primary flex-grow-1">Save</button>
-            <a asp-page="Index" asp-route-libraryId="@Model.Loan.LibraryId" class="btn btn-secondary flex-grow-1">Cancel</a>
+                <!-- Return Date -->
+                <div class="mb-3">
+                    <label asp-for="Loan.ReturnDate" class="form-label fw-bold">Return Date</label>
+                    <input asp-for="Loan.ReturnDate" type="date" class="form-control"
+                           min="@Model.Loan.LoanDate.ToString("yyyy-MM-dd")"
+                           max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                    <span asp-validation-for="Loan.ReturnDate" class="text-danger"></span>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary flex-grow-1">Save</button>
+                    <a asp-page="Index" asp-route-libraryId="@Model.Loan.LibraryId" class="btn btn-secondary flex-grow-1">Cancel</a>
+                </div>
+            </form>
         </div>
-    </form>
-</div>
+    </div>
+}
 
 @section Scripts {
-    <!-- Enable client-side validation scripts -->
     <partial name="_ValidationScriptsPartial" />
 }
+
+<style>
+    /* Card 3D hover effect */
+    .card {
+        transition: transform 0.3s;
+    }
+
+        .card:hover {
+            transform: perspective(800px) rotateX(3deg) rotateY(2deg);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+</style>
