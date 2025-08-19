@@ -8,14 +8,18 @@ namespace LibraryManagement.Infrastructure.Seeding
     /// Initializes the database with a clean migration and seed data.
     /// - Ensures database is created according to EF migrations.
     /// - Seeds Libraries, Members, Books, and sample Loans if tables are empty.
-    /// - Safe for subsequent executions (does not delete existing data).
+    /// - Safe for subsequent executions (does not delete existing real data).
     /// </summary>
     public static class DatabaseInitializer
     {
         public static void Initialize(LibraryContext context)
         {
+            Console.WriteLine("Starting database initialization...");
+
             // Apply migrations (creates DB if it does not exist)
+            Console.WriteLine("Applying pending migrations...");
             context.Database.Migrate();
+            Console.WriteLine("Migrations applied successfully.");
 
             // ======================
             // Libraries
@@ -30,6 +34,11 @@ namespace LibraryManagement.Infrastructure.Seeding
 
                 context.Libraries.AddRange(libraries);
                 context.SaveChanges();
+                Console.WriteLine($"Seeded {libraries.Length} libraries.");
+            }
+            else
+            {
+                Console.WriteLine("Libraries already exist. Skipping seeding libraries.");
             }
 
             // ======================
@@ -50,6 +59,11 @@ namespace LibraryManagement.Infrastructure.Seeding
 
                 context.Members.AddRange(members);
                 context.SaveChanges();
+                Console.WriteLine($"Seeded {members.Length} members.");
+            }
+            else
+            {
+                Console.WriteLine("Members already exist. Skipping seeding members.");
             }
 
             // ======================
@@ -75,6 +89,11 @@ namespace LibraryManagement.Infrastructure.Seeding
 
                 context.Books.AddRange(books);
                 context.SaveChanges();
+                Console.WriteLine($"Seeded {books.Length} books.");
+            }
+            else
+            {
+                Console.WriteLine("Books already exist. Skipping seeding books.");
             }
 
             // ======================
@@ -102,7 +121,14 @@ namespace LibraryManagement.Infrastructure.Seeding
 
                 context.Loans.AddRange(loans);
                 context.SaveChanges();
+                Console.WriteLine($"Seeded {loans.Length} loans.");
             }
+            else
+            {
+                Console.WriteLine("Loans already exist. Skipping seeding loans.");
+            }
+
+            Console.WriteLine("Database initialization completed successfully.");
         }
     }
 }
