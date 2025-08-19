@@ -2,6 +2,9 @@
 using LibraryManagement.Application.Services;
 using LibraryManagement.Infrastructure.Data;
 using LibraryManagement.Application.Mappers;
+using LibraryManagement.Core.Entities;
+
+
 using Microsoft.EntityFrameworkCore;
 using LibraryManagement.Infrastructure.Repositories;
 using LibraryManagement.Application.Validations;
@@ -16,8 +19,31 @@ using LibraryManagement.Infrastructure.Seeding;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using AutoMapper;
+using LibraryManagement.Application.DTOs;
+using Microsoft.Extensions.DependencyInjection;
+using AutoMapper.Execution;
+using LibraryManagement.Core.Entities; // ✅ Añadir este using
+using LibraryManagement.Application.DTOs; // ✅ Añadir este using
+
+
+// ALIAS para evitar ambigüedad
+using CoreMember = LibraryManagement.Core.Entities.Member;
+using ApplicationMemberCreateDto = LibraryManagement.Application.DTOs.MemberCreateDto;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+// Add services to the container.
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    });
+
+
+
 
 // Add services to the container.
 builder.Services.AddControllers()
@@ -48,6 +74,7 @@ builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
 /// GENERIC REPOSITORY REGISTRATION
 /// ================================================
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
 
 /// ================================================
 /// APPLICATION SERVICES REGISTRATION
