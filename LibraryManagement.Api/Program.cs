@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using LibraryManagement.Api.Middleware;
 using LibraryManagement.Application.Validators;
 using LibraryManagement.Application.Validations.Api; // ✅ Custom exception handling middleware
+using LibraryManagement.Infrastructure.Seeding; // ✅ For database seeding
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,12 +55,6 @@ builder.Services.AddScoped<ILibraryService, LibraryService>();
 /// ================================================
 /// WEB VALIDATORS REGISTRATION (SYNC) - RAZOR PAGES AND MVC
 /// ================================================
-/// These validators are synchronous and safe for automatic ASP.NET validation.
-/// They will run automatically when using Razor Pages or MVC forms.
-/// Async validators like MustAsync MUST NOT be registered here.
-/// 
-
-
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddScoped<IValidator<LibraryManagement.Application.DTOs.MemberCreateDto>, MemberCreateDtoValidator>();
 builder.Services.AddScoped<IValidator<LibraryManagement.Application.DTOs.BookCreateDto>, BookValidator>();
@@ -68,15 +63,11 @@ builder.Services.AddScoped<IValidator<LibraryManagement.Application.DTOs.LoanUpd
 
 builder.Services.AddScoped<MemberCreateDtoApiValidator>();
 
-/// ✅ Register RazorPages (uses sync validators automatically)
 builder.Services.AddRazorPages();
 
 /// ================================================
 /// API VALIDATORS REGISTRATION (ASYNC) - MANUAL INVOCATION
 /// ================================================
-/// These validators contain asynchronous rules (e.g., MustAsync) and should NOT
-/// be registered for automatic ASP.NET validation.
-/// They should only be injected manually inside your application services.
 builder.Services.AddScoped<MemberCreateDtoApiValidator>();
 builder.Services.AddScoped<BookCreateDtoApiValidator>();
 builder.Services.AddScoped<LoanCreateDtoApiValidator>();
@@ -85,8 +76,6 @@ builder.Services.AddScoped<LoanUpdateDtoApiValidator>();
 /// ================================================
 /// API BEHAVIOR CONFIGURATION
 /// ================================================
-/// Customizes error response when ModelState is invalid.
-/// Ensures clients receive structured validation errors.
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.InvalidModelStateResponseFactory = context =>
@@ -122,16 +111,14 @@ builder.Services.AddSwaggerGen(c =>
                       "Includes CRUD operations for Books, Members, Loans, and Libraries. " +
                       "Use Swagger UI to test requests with preloaded examples."
     });
-    c.ExampleFilters(); // Enables example request/response
+    c.ExampleFilters();
 });
 
-// Register example providers for all Create DTOs
 builder.Services.AddSwaggerExamplesFromAssemblyOf<MemberCreateExample>();
 builder.Services.AddSwaggerExamplesFromAssemblyOf<BookCreateExample>();
 builder.Services.AddSwaggerExamplesFromAssemblyOf<LibraryCreateExample>();
 builder.Services.AddSwaggerExamplesFromAssemblyOf<LoanCreateExample>();
 
-// Register example providers for all Update DTOs
 builder.Services.AddSwaggerExamplesFromAssemblyOf<MemberUpdateExample>();
 builder.Services.AddSwaggerExamplesFromAssemblyOf<BookUpdateExample>();
 builder.Services.AddSwaggerExamplesFromAssemblyOf<LibraryUpdateExample>();
@@ -140,21 +127,39 @@ builder.Services.AddSwaggerExamplesFromAssemblyOf<LoanUpdateExample>();
 var app = builder.Build();
 
 /// ================================================
+/// DATABASE MIGRATION & SEEDING - RUN ON FIRST EXECUTION
+/// ================================================
+/// Automatically migrates the database and populates test data.
+/// Runs only if database does not exist.
+/// After first run, does nothing to preserve user data.
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<LibraryContext>();
+        DatabaseInitializer.Initialize(context); // ✅ Executes migrations and seeds data
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating or initializing the database.");
+    }
+}
+
+/// ================================================
 /// MIDDLEWARE PIPELINE
 /// ================================================
-
-// ✅ Global exception handling middleware (catches validation + server errors)
 app.UseExceptionHandlingMiddleware();
 
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Library API V1");
-    c.RoutePrefix = "swagger"; // Swagger UI available at /swagger
+    c.RoutePrefix = "swagger";
 });
 
-// Uncomment if HTTPS redirection is required
-// app.UseHttpsRedirection();
+// app.UseHttpsRedirection(); // Uncomment if HTTPS redirection is required
 
 app.UseStaticFiles();
 app.UseRouting();
@@ -173,9 +178,6 @@ app.Run();
 /// ================================================
 #region CREATE EXAMPLES
 
-/// <summary>
-/// Example of creating a Member
-/// </summary>
 public class MemberCreateExample : IExamplesProvider<LibraryManagement.Application.DTOs.MemberCreateDto>
 {
     public LibraryManagement.Application.DTOs.MemberCreateDto GetExamples() =>
@@ -185,13 +187,10 @@ public class MemberCreateExample : IExamplesProvider<LibraryManagement.Applicati
             LastName = "García Ospina",
             Email = "henrygarciaospina@gmail.com",
             PhoneNumber = "+573001234567",
-            LibraryId = 7
+            LibraryId = 1
         };
 }
 
-/// <summary>
-/// Example of creating a Book
-/// </summary>
 public class BookCreateExample : IExamplesProvider<LibraryManagement.Application.DTOs.BookCreateDto>
 {
     public LibraryManagement.Application.DTOs.BookCreateDto GetExamples() =>
@@ -201,29 +200,23 @@ public class BookCreateExample : IExamplesProvider<LibraryManagement.Application
             Author = "Robert C. Martin",
             ISBN = "978-0132350884",
             PublicationYear = 2008,
-            LibraryId = 7,
+            LibraryId = 1,
             IsAvailable = true
         };
 }
 
-/// <summary>
-/// Example of creating a Loan
-/// </summary>
 public class LoanCreateExample : IExamplesProvider<LibraryManagement.Application.DTOs.LoanCreateDto>
 {
     public LibraryManagement.Application.DTOs.LoanCreateDto GetExamples() =>
         new LibraryManagement.Application.DTOs.LoanCreateDto
         {
-            LibraryId = 7,
+            LibraryId = 1,
             BookId = 1,
-            MemberId = 4,
+            MemberId = 1,
             DueDate = DateTime.UtcNow.AddDays(14)
         };
 }
 
-/// <summary>
-/// Example of creating a Library
-/// </summary>
 public class LibraryCreateExample : IExamplesProvider<LibraryManagement.Application.DTOs.LibraryCreateDto>
 {
     public LibraryManagement.Application.DTOs.LibraryCreateDto GetExamples() =>
@@ -246,12 +239,12 @@ public class MemberUpdateExample : IExamplesProvider<LibraryManagement.Applicati
     public LibraryManagement.Application.DTOs.MemberUpdateDto GetExamples() =>
         new LibraryManagement.Application.DTOs.MemberUpdateDto
         {
-            Id = 3,
+            Id = 1,
             FirstName = "Henry",
             LastName = "García Ospina",
             Email = "henrygarciaospina@gmail.com",
             PhoneNumber = "+573001234567",
-            LibraryId = 7
+            LibraryId = 1
         };
 }
 
@@ -260,12 +253,12 @@ public class BookUpdateExample : IExamplesProvider<LibraryManagement.Application
     public LibraryManagement.Application.DTOs.BookUpdateDto GetExamples() =>
         new LibraryManagement.Application.DTOs.BookUpdateDto
         {
-            Id = 15,
+            Id = 1,
             Title = "Clean Code",
             Author = "Robert C. Martin",
             ISBN = "978-0132350884",
             PublicationYear = 2008,
-            LibraryId = 7,
+            LibraryId = 1,
             IsAvailable = true
         };
 }
@@ -275,7 +268,7 @@ public class LibraryUpdateExample : IExamplesProvider<LibraryManagement.Applicat
     public LibraryManagement.Application.DTOs.LibraryUpdateDto GetExamples() =>
         new LibraryManagement.Application.DTOs.LibraryUpdateDto
         {
-            Id = 7,
+            Id = 1,
             Name = "Central Library",
             Address = "123 Main St, City"
         };
@@ -286,20 +279,16 @@ public class LoanUpdateExample : IExamplesProvider<LibraryManagement.Application
     public LibraryManagement.Application.DTOs.LoanUpdateDto GetExamples() =>
         new LibraryManagement.Application.DTOs.LoanUpdateDto
         {
-            Id = 21,
-            LibraryId = 7,
-            BookId = 15,
-            MemberId = 3,
+            Id = 1,
+            LibraryId = 1,
+            BookId = 1,
+            MemberId = 1,
             DueDate = DateTime.UtcNow.AddDays(14),
             ReturnDate = null
         };
 }
 
 #endregion
-
-/// ================================================
-/// CRUD ENDPOINT DOCUMENTATION FOR SWAGGER
-/// ================================================
 
 /*
  * BOOKS:
@@ -342,4 +331,3 @@ public class LoanUpdateExample : IExamplesProvider<LibraryManagement.Application
  * - Click "Try it out"
  * - Example requests for Create/Update DTOs are preloaded
  */
-
