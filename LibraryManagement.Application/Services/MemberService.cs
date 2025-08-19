@@ -1,35 +1,36 @@
 ﻿using AutoMapper;
+using FluentValidation;
 using LibraryManagement.Application.DTOs;
 using LibraryManagement.Application.Interfaces;
+using LibraryManagement.Application.Validations;
 using LibraryManagement.Core.Entities;
 using LibraryManagement.Infrastructure.Repositories;
-using FluentValidation;
-using LibraryManagement.Application.Validations; // ✅ usar solo el validator síncrono aquí
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace LibraryManagement.Application.Services
 {
     /// <summary>
-    /// Service implementation for the Member entity.
-    /// Handles CRUD operations and validation for both Web and API safely.
+    /// Service implementation for Member entity.
+    /// Handles CRUD operations and validation safely for Web and API.
     /// </summary>
     public class MemberService : IMemberService
     {
         private readonly IGenericRepository<Member> _repository;
         private readonly IMapper _mapper;
-        private readonly MemberCreateDtoValidator _validator; // Validator síncrono
+        private readonly ILibraryService _libraryService;
+        private readonly IValidator<MemberCreateDto> _syncValidator; // Synchronous validator for Razor Pages / MVC
 
-        /// <summary>
-        /// Constructor injects repository, mapper, and synchronous validator.
-        /// Async rules should only be called manually inside service if needed.
-        /// </summary>
         public MemberService(
             IGenericRepository<Member> repository,
             IMapper mapper,
-            MemberCreateDtoValidator validator) // ✅ Inyectar solo el validator síncrono
+            ILibraryService libraryService,
+            IValidator<MemberCreateDto> syncValidator) // Inject sync validator
         {
             _repository = repository;
             _mapper = mapper;
-            _validator = validator;
+            _libraryService = libraryService;
+            _syncValidator = syncValidator;
         }
 
         public async Task<IEnumerable<MemberDto>> GetAllAsync()
@@ -46,20 +47,24 @@ namespace LibraryManagement.Application.Services
 
         /// <summary>
         /// Creates a new member.
-        /// Uses synchronous validator for automatic ASP.NET validation.
-        /// If API async rules are needed, call them manually here.
+        /// Uses synchronous validation for Web (Razor Pages) and manual async validation for Library existence.
         /// </summary>
         public async Task<MemberDto> CreateAsync(MemberCreateDto dto)
         {
-            // Validación síncrona segura para Web
-            var validationResult = _validator.Validate(dto);
+            // 1️⃣ Validación síncrona de campos obligatorios
+            var validationResult = _syncValidator.Validate(dto);
             if (!validationResult.IsValid)
-            {
                 throw new ValidationException(validationResult.Errors);
-            }
 
+            // 2️⃣ Validación async manual: verificar que LibraryId exista
+            var library = await _libraryService.GetByIdAsync(dto.LibraryId);
+            if (library == null)
+                throw new ValidationException("The selected library does not exist.");
+
+            // 3️⃣ Mapear y guardar
             var member = _mapper.Map<Member>(dto);
             await _repository.AddAsync(member);
+
             return _mapper.Map<MemberDto>(member);
         }
 
