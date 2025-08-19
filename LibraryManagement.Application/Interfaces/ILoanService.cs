@@ -72,5 +72,9 @@ namespace LibraryManagement.Application.Interfaces
         /// <param name="id">The unique identifier of the loan.</param>
         /// <returns>A LoanDetailsDto if found; otherwise, null.</returns>
         Task<LoanDetailsDto?> GetDetailsByIdAsync(int id);
+
+        Task<IEnumerable<LoanDto>> GetLoansByBookIdAsync(int bookId);
+
+
     }
 }

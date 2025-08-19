@@ -3,6 +3,8 @@ using LibraryManagement.Application.DTOs;
 using LibraryManagement.Application.Interfaces;
 using LibraryManagement.Core.Entities;
 using LibraryManagement.Infrastructure.Repositories;
+using FluentValidation;
+using LibraryManagement.Application.Validations.Api;
 
 namespace LibraryManagement.Application.Services
 {
@@ -10,11 +12,14 @@ namespace LibraryManagement.Application.Services
     {
         private readonly IGenericRepository<Member> _repository;
         private readonly IMapper _mapper;
+        private readonly MemberCreateDtoApiValidator _validator; // Inject the API validator
 
-        public MemberService(IGenericRepository<Member> repository, IMapper mapper)
+        // Constructor now includes the API validator
+        public MemberService(IGenericRepository<Member> repository, IMapper mapper, MemberCreateDtoApiValidator validator)
         {
             _repository = repository;
             _mapper = mapper;
+            _validator = validator;
         }
 
         public async Task<IEnumerable<MemberDto>> GetAllAsync()
@@ -29,8 +34,17 @@ namespace LibraryManagement.Application.Services
             return _mapper.Map<MemberDto>(member);
         }
 
+        // Modify the CreateAsync method to include validation
         public async Task<MemberDto> CreateAsync(MemberCreateDto dto)
         {
+            // Validate using the injected API validator
+            var validationResult = await _validator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+            {
+                // You can throw an exception or handle validation errors here
+                throw new ValidationException(validationResult.Errors);
+            }
+
             var member = _mapper.Map<Member>(dto);
             await _repository.AddAsync(member);
             return _mapper.Map<MemberDto>(member);

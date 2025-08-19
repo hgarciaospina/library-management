@@ -11,6 +11,7 @@ namespace LibraryManagement.Infrastructure.Repositories
         Task AddAsync(T entity);
         Task UpdateAsync(T entity);
         Task DeleteAsync(int id);
+        Task<IEnumerable<T>> GetAllAsync(Func<T, bool> predicate);
 
         // ✅ Save changes for tracked entities
         Task SaveChangesAsync();
@@ -73,6 +74,12 @@ namespace LibraryManagement.Infrastructure.Repositories
             }
 
             return await query.ToListAsync();
+        }
+
+        // Nuevo método con predicado para filtrado
+        public async Task<IEnumerable<T>> GetAllAsync(Func<T, bool> predicate)
+        {
+            return await Task.FromResult(_context.Set<T>().Where(predicate).ToList());
         }
     }
 }

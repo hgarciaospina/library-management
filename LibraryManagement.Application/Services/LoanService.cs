@@ -8,38 +8,48 @@ using LibraryManagement.Infrastructure.Repositories;
 namespace LibraryManagement.Application.Services
 {
     /// <summary>
-    /// Service implementation for Loan entity.
-    /// Handles CRUD operations, validation, and manages book availability.
+    /// Service implementation for the Loan entity.
+    /// Handles CRUD operations, validation, and book availability.
     /// 
     /// ⚡ IMPORTANT:
-    /// - For the Web (MVC/Razor): Uses <see cref="LoanCreateDtoValidator"/> (sync-only).
-    ///   This runs automatically with ASP.NET model binding.
-    /// - For the API: Uses <see cref="LoanCreateDtoApiValidator"/> (can contain async rules).
-    ///   Automatic validation is DISABLED for Loans, and validation is run MANUALLY in this service.
-    /// - Validation errors are wrapped in <see cref="ValidationException"/> and handled by
-    ///   global middleware to return friendly messages to the client.
+    /// - Web (MVC/Razor): Uses <see cref="LoanCreateDtoValidator"/> (sync-only), runs automatically.
+    /// - API: Uses <see cref="LoanCreateDtoApiValidator"/> and <see cref="LoanUpdateDtoApiValidator"/> (async rules allowed),
+    ///   manual validation is performed in this service to avoid issues with ASP.NET's non-async pipeline.
+    /// - Validation exceptions are thrown as <see cref="ValidationException"/> and handled by global middleware.
     /// </summary>
     public class LoanService : ILoanService
     {
+        // Repositories
         private readonly IGenericRepository<Loan> _loanRepository;
         private readonly IGenericRepository<Book> _bookRepository;
-        private readonly IMapper _mapper;
-        private readonly IValidator<Loan> _loanValidator; // ✅ API async validator
 
+        // AutoMapper for DTO <-> Entity mapping
+        private readonly IMapper _mapper;
+
+        // API validators for manual validation (async capable)
+        private readonly IValidator<Loan> _loanCreateDtoApiValidator;
+        private readonly IValidator<LoanUpdateDto> _loanUpdateDtoApiValidator;
+
+        /// <summary>
+        /// Constructor: injects repositories, mapper, and API validators.
+        /// </summary>
         public LoanService(
             IGenericRepository<Loan> loanRepository,
             IGenericRepository<Book> bookRepository,
             IMapper mapper,
-            IValidator<Loan> loanValidator)
+            IValidator<Loan> loanCreateDtoApiValidator,
+            IValidator<LoanUpdateDto> loanUpdateDtoApiValidator)
         {
             _loanRepository = loanRepository;
             _bookRepository = bookRepository;
             _mapper = mapper;
-            _loanValidator = loanValidator;
+            _loanCreateDtoApiValidator = loanCreateDtoApiValidator;
+            _loanUpdateDtoApiValidator = loanUpdateDtoApiValidator;
         }
 
         /// <summary>
-        /// Retrieves all loans without including related entities.
+        /// Retrieves all loans without related entities.
+        /// Lightweight operation for lists where only loan fields are needed.
         /// </summary>
         public async Task<IEnumerable<LoanDto>> GetAllAsync()
         {
@@ -48,9 +58,8 @@ namespace LibraryManagement.Application.Services
         }
 
         /// <summary>
-        /// Retrieves all loans including Book, Member, and Library entities.
-        /// Orders unreturned loans by due date descending, then by member name,
-        /// then returned loans by due date ascending.
+        /// Retrieves all loans including related Book, Member, and Library entities.
+        /// Orders unreturned loans first by due date descending, then returned loans last.
         /// </summary>
         public async Task<IEnumerable<LoanDto>> GetAllWithDetailsAsync()
         {
@@ -61,7 +70,7 @@ namespace LibraryManagement.Application.Services
             );
 
             var orderedLoans = loans
-                .OrderByDescending(l => !l.ReturnDate.HasValue)   // Unreturned first
+                .OrderByDescending(l => !l.ReturnDate.HasValue)   // Unreturned loans first
                 .ThenByDescending(l => l.DueDate)                // Most recent due date
                 .ThenBy(l => l.Member.LastName)                  // Member last name
                 .ThenBy(l => l.Member.FirstName)                 // Member first name
@@ -72,8 +81,8 @@ namespace LibraryManagement.Application.Services
         }
 
         /// <summary>
-        /// Retrieves all loans with detailed information for the Index or listing view.
-        /// Maps to LoanDetailsDto which includes library, book, member, and dates.
+        /// Retrieves all loans including detailed information (LoanDetailsDto)
+        /// for Index or listing views.
         /// </summary>
         public async Task<IEnumerable<LoanDetailsDto>> GetAllDetailsAsync()
         {
@@ -87,7 +96,7 @@ namespace LibraryManagement.Application.Services
         }
 
         /// <summary>
-        /// Retrieves a single loan by ID including related Book, Member, and Library entities.
+        /// Retrieves a loan by ID including Book, Member, and Library entities.
         /// Throws ArgumentException if the loan does not exist.
         /// </summary>
         public async Task<LoanDto> GetByIdWithDetailsAsync(int id)
@@ -106,7 +115,7 @@ namespace LibraryManagement.Application.Services
         }
 
         /// <summary>
-        /// Retrieves a single loan by ID without related entities.
+        /// Retrieves a loan by ID without related entities.
         /// Throws ArgumentException if the loan does not exist.
         /// </summary>
         public async Task<LoanDto> GetByIdAsync(int id)
@@ -118,10 +127,11 @@ namespace LibraryManagement.Application.Services
             return _mapper.Map<LoanDto>(loan);
         }
 
+
+
         /// <summary>
-        /// Retrieves a single loan with all related details for the Details page.
-        /// Includes member full name, book title & ISBN, library info, and all loan dates.
-        /// Returns null if not found.
+        /// Retrieves a loan by ID with full details (LoanDetailsDto).
+        /// Returns null if loan is not found.
         /// </summary>
         public async Task<LoanDetailsDto?> GetDetailsByIdAsync(int id)
         {
@@ -138,26 +148,22 @@ namespace LibraryManagement.Application.Services
         }
 
         /// <summary>
-        /// Creates a new loan and marks the book as unavailable.
-        /// 
-        /// ✅ API: Manual validation with <see cref="LoanCreateDtoApiValidator"/> (async rules allowed).
-        /// ✅ Web: Validation handled automatically with <see cref="LoanCreateDtoValidator"/> (sync only).
-        /// 
-        /// Returns friendly validation messages handled by global middleware.
+        /// Creates a new loan and marks the associated book as unavailable.
+        /// Manual async validation is used for API requests.
+        /// Validation exceptions are handled by middleware.
         /// </summary>
         public async Task<LoanDto> CreateAsync(LoanCreateDto dto)
         {
-            // Map DTO to Loan entity
             var loan = _mapper.Map<Loan>(dto);
 
-            // ✅ API: manual async validation
-            var validationResult = await _loanValidator.ValidateAsync(loan);
+            // ✅ API manual async validation
+            var validationResult = await _loanCreateDtoApiValidator.ValidateAsync(loan);
             if (!validationResult.IsValid)
             {
                 throw new ValidationException("Validation failed", validationResult.Errors);
             }
 
-            // ✅ Additional business validation: book existence
+            // Check if book exists
             var book = await _bookRepository.GetByIdAsync(dto.BookId);
             if (book == null)
             {
@@ -172,10 +178,9 @@ namespace LibraryManagement.Application.Services
             book.IsAvailable = false;
             await _bookRepository.UpdateAsync(book);
 
-            // Save loan
             await _loanRepository.AddAsync(loan);
 
-            // Map entity back to DTO for response
+            // Map entity back to DTO
             var loanDto = _mapper.Map<LoanDto>(loan);
             loanDto.LibraryId = book.LibraryId;
             loanDto.LibraryName = book.Library?.Name ?? string.Empty;
@@ -183,22 +188,36 @@ namespace LibraryManagement.Application.Services
             return loanDto;
         }
 
+        // Implementar el método GetLoansByBookIdAsync
+        public async Task<IEnumerable<LoanDto>> GetLoansByBookIdAsync(int bookId)
+        {
+            var loans = await _loanRepository.GetAllAsync(l => l.BookId == bookId);
+            return _mapper.Map<IEnumerable<LoanDto>>(loans);
+        }
+
+
         /// <summary>
-        /// Updates an existing loan.
-        /// Updates book availability if the loan is returned.
-        /// Throws ArgumentException if the loan does not exist.
+        /// Updates an existing loan record.
+        /// Validates the DTO using async API validator.
+        /// Updates loan properties and book availability if returned.
         /// </summary>
         public async Task UpdateAsync(LoanUpdateDto dto)
         {
+            // ✅ API async validation
+            var validationResult = await _loanUpdateDtoApiValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+                throw new ValidationException(validationResult.Errors);
+
             var loan = await _loanRepository.GetByIdAsync(dto.Id);
             if (loan == null)
-                throw new ArgumentException("Loan not found.");
+                throw new KeyNotFoundException($"Loan with ID {dto.Id} not found.");
 
+            // Update loan fields
             loan.BookId = dto.BookId;
             loan.DueDate = dto.DueDate;
             loan.ReturnDate = dto.ReturnDate;
 
-            // If loan is returned, mark the book as available
+            // If returned, mark book as available
             if (loan.ReturnDate.HasValue)
             {
                 var book = await _bookRepository.GetByIdAsync(loan.BookId);

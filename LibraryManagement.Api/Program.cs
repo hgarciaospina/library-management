@@ -4,13 +4,15 @@ using LibraryManagement.Infrastructure.Data;
 using LibraryManagement.Application.Mappers;
 using Microsoft.EntityFrameworkCore;
 using LibraryManagement.Infrastructure.Repositories;
-using FluentValidation;
 using LibraryManagement.Application.Validations;
+using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using Microsoft.AspNetCore.Mvc;
-using LibraryManagement.Api.Middleware; // ✅ Added for exception handling middleware
+using LibraryManagement.Api.Middleware;
+using LibraryManagement.Application.Validations.Api;
+using LibraryManagement.Application.Validators; // ✅ Custom exception handling middleware
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +22,7 @@ var builder = WebApplication.CreateBuilder(args);
 /// Configures SQL Server connection for EF Core
 /// Includes retry policy for transient failures
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-connectionString += ";Encrypt=False;TrustServerCertificate=True"; // Dev adjustment
+connectionString += ";Encrypt=False;TrustServerCertificate=True"; // Dev-only adjustment
 
 builder.Services.AddDbContext<LibraryContext>(options =>
 {
@@ -31,17 +33,19 @@ builder.Services.AddDbContext<LibraryContext>(options =>
 /// ================================================
 /// AUTOMAPPER CONFIGURATION
 /// ================================================
-/// AutoMapper profile for mapping Entities <-> DTOs
+/// Registers AutoMapper profile for mapping Entities <-> DTOs
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
 
 /// ================================================
 /// GENERIC REPOSITORY REGISTRATION
 /// ================================================
+/// Adds generic repository pattern for all entities
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
 /// ================================================
 /// APPLICATION SERVICES REGISTRATION
 /// ================================================
+/// Registers business/application services (Dependency Injection)
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IMemberService, MemberService>();
 builder.Services.AddScoped<ILoanService, LoanService>();
@@ -50,20 +54,41 @@ builder.Services.AddScoped<ILibraryService, LibraryService>();
 /// ================================================
 /// FLUENTVALIDATION CONFIGURATION
 /// ================================================
-/// Registers validators automatically for DTOs
-/// IMPORTANT CHANGES:
-/// - Automatic validation disabled to avoid issues with async validators
-/// - Web validator runs automatically
-/// - API validator is registered manually and executed in LoanService
+/// IMPORTANT:
+/// - Automatic validation is disabled for controllers (to avoid issues with async validators).
+/// - Web Validators are executed automatically by RazorPages / MVC.
+/// - API Validators must be invoked manually inside Application Services.
+/// 
+
+// ✅ Prevent ASP.NET from running validators automatically
 builder.Services.AddControllers()
     .AddFluentValidation(fv =>
     {
-        fv.RegisterValidatorsFromAssemblyContaining<MemberCreateDtoValidator>();
-        fv.AutomaticValidationEnabled = false; // ✅ Prevents ASP.NET sync validation errors
+        fv.RegisterValidatorsFromAssemblyContaining<MemberCreateDtoApiValidator>();
+        fv.RegisterValidatorsFromAssemblyContaining<LoanUpdateDtoApiValidator>();
+        fv.AutomaticValidationEnabled = false; 
     });
 
-/// ✅ Register async validator manually (API use only, invoked inside LoanService)
+/// ================================================
+/// WEB VALIDATORS REGISTRATION (SYNC) - RAZOR PAGES AND MVC
+/// ================================================
+/// These are used by Razor Pages & MVC forms.
+/// They are synchronous (no async rules like MustAsync).
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddScoped<IValidator<LibraryManagement.Application.DTOs.MemberCreateDto>, MemberCreateDtoValidator>();
+builder.Services.AddScoped<IValidator<LibraryManagement.Application.DTOs.BookCreateDto>, BookValidator>();
 builder.Services.AddScoped<IValidator<LibraryManagement.Application.DTOs.LoanCreateDto>, LoanCreateDtoValidator>();
+builder.Services.AddScoped<IValidator<LibraryManagement.Application.DTOs.LoanUpdateDto>, LoanUpdateDtoValidator>();
+
+/// ================================================
+/// API VALIDATORS REGISTRATION (ASYNC) - FOR API
+/// ================================================
+/// These are invoked manually inside Application Services.
+/// They support async rules (e.g. MustAsync for DB lookups).
+builder.Services.AddScoped<MemberCreateDtoApiValidator>();
+builder.Services.AddScoped<BookCreateDtoApiValidator>();
+builder.Services.AddScoped<LoanCreateDtoApiValidator>();
+builder.Services.AddScoped<LoanUpdateDtoApiValidator>();
 
 /// ✅ Register RazorPages (uses sync validators automatically)
 builder.Services.AddRazorPages();
@@ -71,7 +96,8 @@ builder.Services.AddRazorPages();
 /// ================================================
 /// API BEHAVIOR CONFIGURATION
 /// ================================================
-/// Returns full validation error details for clients
+/// Customizes error response when ModelState is invalid.
+/// Ensures clients receive structured validation errors.
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.InvalidModelStateResponseFactory = context =>
@@ -96,6 +122,7 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 /// ================================================
 /// SWAGGER / OPENAPI CONFIGURATION
 /// ================================================
+/// Registers Swagger UI with example providers for DTOs
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -105,7 +132,7 @@ builder.Services.AddSwaggerGen(c =>
         Version = "v1",
         Description = "Library Management System API endpoints. " +
                       "Includes CRUD operations for Books, Members, Loans, and Libraries. " +
-                      "Use Swagger UI to test requests with examples."
+                      "Use Swagger UI to test requests with preloaded examples."
     });
     c.ExampleFilters(); // Enables example request/response
 });
