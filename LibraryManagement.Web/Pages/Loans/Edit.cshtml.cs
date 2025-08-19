@@ -8,11 +8,6 @@ using FluentValidation.Results;
 
 namespace LibraryManagement.Web.Pages.Loans
 {
-    /// <summary>
-    /// PageModel for editing a Loan.
-    /// Only Book, DueDate, and ReturnDate can be modified.
-    /// Library and Member are read-only.
-    /// </summary>
     public class EditModel : PageModel
     {
         private readonly ILoanService _loanService;
@@ -40,15 +35,14 @@ namespace LibraryManagement.Web.Pages.Loans
         public string LibraryName { get; set; } = string.Empty;
 
         /// <summary>
-        /// Load loan data and populate dropdowns.
-        /// Maps LoanDto → LoanUpdateDto to avoid type mismatch.
+        /// Carga los datos del préstamo y rellena los dropdowns.
         /// </summary>
         public async Task<IActionResult> OnGetAsync(int id)
         {
             var loanDto = await _loanService.GetByIdWithDetailsAsync(id);
             if (loanDto == null) return NotFound();
 
-            // Map LoanDto → LoanUpdateDto including LoanDate
+            // Mapear LoanDto → LoanUpdateDto
             Loan = new LoanUpdateDto
             {
                 Id = loanDto.Id,
@@ -74,35 +68,37 @@ namespace LibraryManagement.Web.Pages.Loans
         }
 
         /// <summary>
-        /// Handle form submission to update loan.
-        /// Loads LoanDate before validating to ensure ReturnDate is validated correctly.
+        /// Maneja la sumisión del formulario para actualizar el préstamo.
+        /// Valida con FluentValidation y recarga dropdowns si hay errores.
         /// </summary>
         public async Task<IActionResult> OnPostAsync()
         {
-            // Reload LoanDate from database before validation
+            // Recargar LoanDate desde la base de datos antes de la validación
             var loanFromDb = await _loanService.GetByIdWithDetailsAsync(Loan.Id);
             if (loanFromDb == null) return NotFound();
 
             Loan.LoanDate = loanFromDb.LoanDate;
 
-            // Validate using FluentValidation
+            // Validar con FluentValidation
             ValidationResult result = _validator.Validate(Loan);
             if (!result.IsValid)
             {
                 foreach (var error in result.Errors)
                 {
-                    ModelState.AddModelError(string.Empty, error.ErrorMessage);
+                    // Asociar cada error a ModelState para que se muestre en la vista
+                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
                 }
 
-                // Reload dropdowns
+                // Recargar dropdowns para mantener selecciones previas
                 await OnGetAsync(Loan.Id);
+
                 return Page();
             }
 
-            // Update loan and book availability
+            // Actualizar préstamo y disponibilidad del libro
             await _loanService.UpdateAsync(Loan);
 
-            // Redirect back to loans index for the library
+            // Redirigir de nuevo a la lista de préstamos
             return RedirectToPage("Index", new { libraryId = Loan.LibraryId });
         }
     }

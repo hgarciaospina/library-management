@@ -79,6 +79,19 @@ else
                     <span asp-validation-for="Loan.ReturnDate" class="text-danger"></span>
                 </div>
 
+                <!-- FluentValidation summary -->
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger">
+                        <ul>
+                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                <li>@error.ErrorMessage</li>
+                            }
+                        </ul>
+                    </div>
+                }
+
                 <!-- Action Buttons -->
                 <div class="d-flex gap-2 mt-4">
                     <button type="submit" class="btn btn-primary flex-grow-1">Save</button>

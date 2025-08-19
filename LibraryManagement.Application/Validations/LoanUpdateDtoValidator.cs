@@ -6,8 +6,11 @@ namespace LibraryManagement.Application.Validators
 {
     /// <summary>
     /// Validator for updating a Loan.
-    /// Ensures BookId and DueDate are valid.
-    /// ReturnDate, if provided, cannot be earlier than LoanDate and cannot be after today's date.
+    /// Ensures:
+    /// - BookId is selected.
+    /// - DueDate is required and cannot be before LoanDate.
+    /// - ReturnDate, if provided, cannot be earlier than LoanDate and cannot be after today.
+    /// - All date comparisons ignore time component.
     /// </summary>
     public class LoanUpdateDtoValidator : AbstractValidator<LoanUpdateDto>
     {
@@ -21,25 +24,29 @@ namespace LibraryManagement.Application.Validators
                 .WithMessage("Book must be selected.");
 
             // ==============================
-            // DueDate is required
+            // DueDate is required and must be >= LoanDate (ignoring time)
             // ==============================
             RuleFor(x => x.DueDate)
                 .NotEmpty()
-                .WithMessage("Due date is required.");
+                .WithMessage("Due date is required.")
+                .Must((dto, dueDate) => dueDate.Date >= dto.LoanDate.Date)
+                .WithMessage("Due date cannot be before the loan date.");
 
             // ==============================
-            // ReturnDate cannot be earlier than LoanDate
-            // and cannot be after the current date
+            // ReturnDate, if provided, must be >= LoanDate (ignoring time) and <= today
             // ==============================
             RuleFor(x => x.ReturnDate)
-                .GreaterThanOrEqualTo(x => x.LoanDate)
-                .When(x => x.ReturnDate.HasValue)
-                .WithMessage("Return date cannot be earlier than the loan date.");
-
-            RuleFor(x => x.ReturnDate)
-                .LessThanOrEqualTo(DateTime.Today)
-                .When(x => x.ReturnDate.HasValue)
+                .Must((dto, returnDate) =>
+                    !returnDate.HasValue || returnDate.Value.Date >= dto.LoanDate.Date)
+                .WithMessage("Return date cannot be earlier than the loan date.")
+                .Must(returnDate =>
+                    !returnDate.HasValue || returnDate.Value.Date <= DateTime.Today)
                 .WithMessage("Return date cannot be in the future.");
+
+            // ==============================
+            // Additional date rules can be added here if needed
+            // Example: RenewalDate, etc.
+            // ==============================
         }
     }
 }

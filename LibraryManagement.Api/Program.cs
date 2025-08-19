@@ -12,7 +12,6 @@ using Swashbuckle.AspNetCore.Filters;
 using Microsoft.AspNetCore.Mvc;
 using LibraryManagement.Api.Middleware;
 using LibraryManagement.Application.Validators;
-using LibraryManagement.Application.Validations.Api; // ✅ Custom exception handling middleware
 using LibraryManagement.Infrastructure.Seeding; // ✅ For database seeding
 
 var builder = WebApplication.CreateBuilder(args);
@@ -56,22 +55,20 @@ builder.Services.AddScoped<ILibraryService, LibraryService>();
 /// WEB VALIDATORS REGISTRATION (SYNC) - RAZOR PAGES AND MVC
 /// ================================================
 builder.Services.AddFluentValidationAutoValidation();
+
 builder.Services.AddScoped<IValidator<LibraryManagement.Application.DTOs.MemberCreateDto>, MemberCreateDtoValidator>();
 builder.Services.AddScoped<IValidator<LibraryManagement.Application.DTOs.BookCreateDto>, BookValidator>();
 builder.Services.AddScoped<IValidator<LibraryManagement.Application.DTOs.LoanCreateDto>, LoanCreateDtoValidator>();
 builder.Services.AddScoped<IValidator<LibraryManagement.Application.DTOs.LoanUpdateDto>, LoanUpdateDtoValidator>();
 
-builder.Services.AddScoped<MemberCreateDtoApiValidator>();
 
 builder.Services.AddRazorPages();
 
 /// ================================================
-/// API VALIDATORS REGISTRATION (ASYNC) - MANUAL INVOCATION
+/// API VALIDATORS REGISTRATION (ASYNC) - REMOVIDOS
 /// ================================================
-builder.Services.AddScoped<MemberCreateDtoApiValidator>();
-builder.Services.AddScoped<BookCreateDtoApiValidator>();
-builder.Services.AddScoped<LoanCreateDtoApiValidator>();
-builder.Services.AddScoped<LoanUpdateDtoApiValidator>();
+// Se eliminan todos los validadores asincrónicos para API
+// Si se necesita validación en API, debe hacerse manual en los endpoints
 
 /// ================================================
 /// API BEHAVIOR CONFIGURATION
@@ -129,9 +126,6 @@ var app = builder.Build();
 /// ================================================
 /// DATABASE MIGRATION & SEEDING - RUN ON FIRST EXECUTION
 /// ================================================
-/// Automatically migrates the database and populates test data.
-/// Runs only if database does not exist.
-/// After first run, does nothing to preserve user data.
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;

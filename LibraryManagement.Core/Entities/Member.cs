@@ -10,7 +10,7 @@ namespace LibraryManagement.Core.Entities
         public string LastName { get; set; }
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
-        public DateTime RegistrationDate { get; set; } = DateTime.UtcNow;
+        public DateTime RegistrationDate { get; set; } = DateTime.Now;
 
         public int LibraryId { get; set; }
         public Library Library { get; set; }
