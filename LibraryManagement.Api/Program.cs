@@ -12,17 +12,26 @@ using Swashbuckle.AspNetCore.Filters;
 using Microsoft.AspNetCore.Mvc;
 using LibraryManagement.Api.Middleware;
 using LibraryManagement.Application.Validators;
-using LibraryManagement.Infrastructure.Seeding; // ✅ For database seeding
+using LibraryManagement.Infrastructure.Seeding;
+using System.Reflection;
+using System.Text.Json.Serialization;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    });
 
 /// ================================================
 /// DATABASE CONTEXT CONFIGURATION
 /// ================================================
-/// Configures SQL Server connection for EF Core
-/// Includes retry policy for transient failures
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-connectionString += ";Encrypt=False;TrustServerCertificate=True"; // Dev-only adjustment
+connectionString += ";Encrypt=False;TrustServerCertificate=True";
 
 builder.Services.AddDbContext<LibraryContext>(options =>
 {
@@ -33,26 +42,23 @@ builder.Services.AddDbContext<LibraryContext>(options =>
 /// ================================================
 /// AUTOMAPPER CONFIGURATION
 /// ================================================
-/// Registers AutoMapper profile for mapping Entities <-> DTOs
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
 
 /// ================================================
 /// GENERIC REPOSITORY REGISTRATION
 /// ================================================
-/// Adds generic repository pattern for all entities
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
 /// ================================================
 /// APPLICATION SERVICES REGISTRATION
 /// ================================================
-/// Registers business/application services (Dependency Injection)
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IMemberService, MemberService>();
 builder.Services.AddScoped<ILoanService, LoanService>();
 builder.Services.AddScoped<ILibraryService, LibraryService>();
 
 /// ================================================
-/// WEB VALIDATORS REGISTRATION (SYNC) - RAZOR PAGES AND MVC
+/// WEB VALIDATORS REGISTRATION (SYNC)
 /// ================================================
 builder.Services.AddFluentValidationAutoValidation();
 
@@ -61,20 +67,14 @@ builder.Services.AddScoped<IValidator<LibraryManagement.Application.DTOs.BookCre
 builder.Services.AddScoped<IValidator<LibraryManagement.Application.DTOs.LoanCreateDto>, LoanCreateDtoValidator>();
 builder.Services.AddScoped<IValidator<LibraryManagement.Application.DTOs.LoanUpdateDto>, LoanUpdateDtoValidator>();
 
-
 builder.Services.AddRazorPages();
-
-/// ================================================
-/// API VALIDATORS REGISTRATION (ASYNC) - REMOVIDOS
-/// ================================================
-// Se eliminan todos los validadores asincrónicos para API
-// Si se necesita validación en API, debe hacerse manual en los endpoints
 
 /// ================================================
 /// API BEHAVIOR CONFIGURATION
 /// ================================================
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
+    options.SuppressModelStateInvalidFilter = true;
     options.InvalidModelStateResponseFactory = context =>
     {
         var errors = context.ModelState
@@ -89,33 +89,54 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
             Type = "https://tools.ietf.org/html/rfc9110#section-15.5.1",
             Title = "One or more validation errors occurred.",
             Status = 400,
-            Errors = errors
+            Errors = errors,
+            TraceId = context.HttpContext.TraceIdentifier
         });
     };
 });
 
 /// ================================================
-/// SWAGGER / OPENAPI CONFIGURATION
+/// SWAGGER / OPENAPI CONFIGURATION - FIXED
 /// ================================================
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Library API",
-        Version = "v1",
-        Description = "Library Management System API endpoints. " +
-                      "Includes CRUD operations for Books, Members, Loans, and Libraries. " +
-                      "Use Swagger UI to test requests with preloaded examples."
+        Title = "Library Management API",
+        Version = "1.0",
+        Description = "API for managing library operations including books, members, loans, and libraries.",
+        Contact = new OpenApiContact
+        {
+            Name = "Library Management Team",
+            Email = "support@librarymanagement.com"
+        }
     });
+
+    // Include XML comments for better documentation
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+
+    if (File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath);
+    }
+
+    // Add examples for all DTOs
     c.ExampleFilters();
+
+    // Add detailed schema descriptions
+    c.SchemaFilter<LibraryManagementSchemaFilter>();
+
+    // CRITICAL: Force discovery of all controllers and actions
+    c.DocInclusionPredicate((docName, apiDesc) => true);
 });
 
+// Register all Swagger Examples for Create/Update DTOs
 builder.Services.AddSwaggerExamplesFromAssemblyOf<MemberCreateExample>();
 builder.Services.AddSwaggerExamplesFromAssemblyOf<BookCreateExample>();
 builder.Services.AddSwaggerExamplesFromAssemblyOf<LibraryCreateExample>();
 builder.Services.AddSwaggerExamplesFromAssemblyOf<LoanCreateExample>();
-
 builder.Services.AddSwaggerExamplesFromAssemblyOf<MemberUpdateExample>();
 builder.Services.AddSwaggerExamplesFromAssemblyOf<BookUpdateExample>();
 builder.Services.AddSwaggerExamplesFromAssemblyOf<LibraryUpdateExample>();
@@ -124,7 +145,7 @@ builder.Services.AddSwaggerExamplesFromAssemblyOf<LoanUpdateExample>();
 var app = builder.Build();
 
 /// ================================================
-/// DATABASE MIGRATION & SEEDING - RUN ON FIRST EXECUTION
+/// DATABASE MIGRATION & SEEDING
 /// ================================================
 using (var scope = app.Services.CreateScope())
 {
@@ -132,7 +153,7 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<LibraryContext>();
-        DatabaseInitializer.Initialize(context); // ✅ Executes migrations and seeds data
+        DatabaseInitializer.Initialize(context);
     }
     catch (Exception ex)
     {
@@ -146,24 +167,47 @@ using (var scope = app.Services.CreateScope())
 /// ================================================
 app.UseExceptionHandlingMiddleware();
 
-app.UseSwagger();
-app.UseSwaggerUI(c =>
+// Configure Swagger UI
+app.UseSwagger(c =>
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Library API V1");
-    c.RoutePrefix = "swagger";
+    c.RouteTemplate = "swagger/{documentName}/swagger.json";
+    c.PreSerializeFilters.Add((swaggerDoc, httpReq) =>
+    {
+        swaggerDoc.Servers = new List<OpenApiServer>
+        {
+            new OpenApiServer { Url = $"{httpReq.Scheme}://{httpReq.Host.Value}" }
+        };
+    });
 });
 
-// app.UseHttpsRedirection(); // Uncomment if HTTPS redirection is required
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Library Management API v1.0");
+    c.RoutePrefix = "swagger";
+    c.DocumentTitle = "Library Management API Documentation";
+    c.DefaultModelsExpandDepth(-1);
+    c.DisplayOperationId();
+    c.DisplayRequestDuration();
+    c.EnableDeepLinking();
+    c.EnableFilter();
+    c.ShowExtensions();
+});
 
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthorization();
 
 /// ================================================
-/// ENDPOINT MAPPING
+/// ENDPOINT MAPPING - CRITICAL FOR API DISCOVERY
 /// ================================================
-app.MapControllers();
-app.MapRazorPages();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+    endpoints.MapRazorPages();
+});
+
+// Redirect root to Swagger
+app.MapGet("/", () => Results.Redirect("/swagger"));
 
 app.Run();
 
@@ -190,7 +234,7 @@ public class BookCreateExample : IExamplesProvider<LibraryManagement.Application
     public LibraryManagement.Application.DTOs.BookCreateDto GetExamples() =>
         new LibraryManagement.Application.DTOs.BookCreateDto
         {
-            Title = "Clean Code",
+            Title = "Clean Code: A Handbook of Agile Software Craftsmanship",
             Author = "Robert C. Martin",
             ISBN = "978-0132350884",
             PublicationYear = 2008,
@@ -216,8 +260,8 @@ public class LibraryCreateExample : IExamplesProvider<LibraryManagement.Applicat
     public LibraryManagement.Application.DTOs.LibraryCreateDto GetExamples() =>
         new LibraryManagement.Application.DTOs.LibraryCreateDto
         {
-            Name = "Central Library",
-            Address = "123 Main St, City"
+            Name = "Central Public Library",
+            Address = "123 Main Street, Downtown, Cityville"
         };
 }
 
@@ -234,10 +278,10 @@ public class MemberUpdateExample : IExamplesProvider<LibraryManagement.Applicati
         new LibraryManagement.Application.DTOs.MemberUpdateDto
         {
             Id = 1,
-            FirstName = "Henry",
+            FirstName = "Henry Updated",
             LastName = "García Ospina",
-            Email = "henrygarciaospina@gmail.com",
-            PhoneNumber = "+573001234567",
+            Email = "henry.updated@example.com",
+            PhoneNumber = "+573009876543",
             LibraryId = 1
         };
 }
@@ -248,12 +292,12 @@ public class BookUpdateExample : IExamplesProvider<LibraryManagement.Application
         new LibraryManagement.Application.DTOs.BookUpdateDto
         {
             Id = 1,
-            Title = "Clean Code",
+            Title = "Clean Code: Updated Edition",
             Author = "Robert C. Martin",
             ISBN = "978-0132350884",
             PublicationYear = 2008,
             LibraryId = 1,
-            IsAvailable = true
+            IsAvailable = false
         };
 }
 
@@ -263,8 +307,8 @@ public class LibraryUpdateExample : IExamplesProvider<LibraryManagement.Applicat
         new LibraryManagement.Application.DTOs.LibraryUpdateDto
         {
             Id = 1,
-            Name = "Central Library",
-            Address = "123 Main St, City"
+            Name = "Central Public Library - Renovated",
+            Address = "456 Oak Avenue, Uptown, Cityville"
         };
 }
 
@@ -277,51 +321,64 @@ public class LoanUpdateExample : IExamplesProvider<LibraryManagement.Application
             LibraryId = 1,
             BookId = 1,
             MemberId = 1,
-            DueDate = DateTime.UtcNow.AddDays(14),
-            ReturnDate = null
+            DueDate = DateTime.UtcNow.AddDays(21),
+            ReturnDate = DateTime.UtcNow.AddDays(14),
+            LoanDate = DateTime.UtcNow.AddDays(-7)
         };
 }
 
 #endregion
 
-/*
- * BOOKS:
- * GET /api/books - List all books
- * GET /api/books/{id} - Get book by ID
- * POST /api/books - Create a book (BookCreateDto)
- * PUT /api/books/{id} - Update a book (BookUpdateDto)
- * DELETE /api/books/{id} - Delete a book
- * 
- * MEMBERS:
- * GET /api/members
- * GET /api/members/{id}
- * POST /api/members
- * PUT /api/members/{id}
- * DELETE /api/members/{id}
- *
- * LOANS:
- * GET /api/loans
- * GET /api/loans/{id}
- * POST /api/loans
- * PUT /api/loans/{id}
- * DELETE /api/loans/{id}
- *
- * LIBRARIES:
- * GET /api/libraries
- * GET /api/libraries/{id}
- * POST /api/libraries
- * PUT /api/libraries/{id}
- * DELETE /api/libraries/{id}
- *
- * VALIDATIONS:
- * - Emails must be in valid format
- * - ISBN must follow standard format
- * - Loan/Return dates: ReturnDate >= LoanDate
- * - All required fields cannot be null
- *
- * SWAGGER USAGE:
- * - Navigate to /swagger
- * - Select endpoint
- * - Click "Try it out"
- * - Example requests for Create/Update DTOs are preloaded
- */
+/// ================================================
+/// CUSTOM SCHEMA FILTER FOR BETTER DOCUMENTATION
+/// ================================================
+public class LibraryManagementSchemaFilter : ISchemaFilter
+{
+    public void Apply(OpenApiSchema schema, SchemaFilterContext context)
+    {
+        if (context.Type == typeof(LibraryManagement.Application.DTOs.BookCreateDto))
+        {
+            schema.Description = "Data transfer object for creating a new book in the library system.";
+        }
+        else if (context.Type == typeof(LibraryManagement.Application.DTOs.BookDto))
+        {
+            schema.Description = "Data transfer object representing a book with all details including library information.";
+        }
+        else if (context.Type == typeof(LibraryManagement.Application.DTOs.LibraryDto))
+        {
+            schema.Description = "Data transfer object representing a library location.";
+        }
+        else if (context.Type == typeof(LibraryManagement.Application.DTOs.LibraryUpdateDto))
+        {
+            schema.Description = "Data transfer object for updating an existing library.";
+        }
+        else if (context.Type == typeof(LibraryManagement.Application.DTOs.LoanCreateDto))
+        {
+            schema.Description = "Data transfer object for creating a new book loan.";
+        }
+        else if (context.Type == typeof(LibraryManagement.Application.DTOs.LoanDetailsDto))
+        {
+            schema.Description = "Data transfer object containing complete details of a book loan.";
+        }
+        else if (context.Type == typeof(LibraryManagement.Application.DTOs.LoanDto))
+        {
+            schema.Description = "Data transfer object representing a book loan with related information.";
+        }
+        else if (context.Type == typeof(LibraryManagement.Application.DTOs.LoanUpdateDto))
+        {
+            schema.Description = "Data transfer object for updating an existing book loan, primarily for recording returns.";
+        }
+        else if (context.Type == typeof(LibraryManagement.Application.DTOs.MemberCreateDto))
+        {
+            schema.Description = "Data transfer object for creating a new library member.";
+        }
+        else if (context.Type == typeof(LibraryManagement.Application.DTOs.MemberDto))
+        {
+            schema.Description = "Data transfer object representing a library member with all details.";
+        }
+        else if (context.Type == typeof(LibraryManagement.Application.DTOs.MemberUpdateDto))
+        {
+            schema.Description = "Data transfer object for updating an existing library member's information.";
+        }
+    }
+}
