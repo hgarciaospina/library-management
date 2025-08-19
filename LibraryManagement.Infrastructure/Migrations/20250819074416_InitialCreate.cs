@@ -81,6 +81,7 @@ namespace LibraryManagement.Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     BookId = table.Column<int>(type: "int", nullable: false),
                     MemberId = table.Column<int>(type: "int", nullable: false),
+                    LibraryId = table.Column<int>(type: "int", nullable: false),
                     LoanDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ReturnDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     DueDate = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -92,6 +93,12 @@ namespace LibraryManagement.Infrastructure.Migrations
                         name: "FK_Loans_Books_BookId",
                         column: x => x.BookId,
                         principalTable: "Books",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Loans_Libraries_LibraryId",
+                        column: x => x.LibraryId,
+                        principalTable: "Libraries",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
@@ -111,6 +118,11 @@ namespace LibraryManagement.Infrastructure.Migrations
                 name: "IX_Loans_BookId",
                 table: "Loans",
                 column: "BookId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Loans_LibraryId",
+                table: "Loans",
+                column: "LibraryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Loans_MemberId",
