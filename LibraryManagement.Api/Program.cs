@@ -11,8 +11,9 @@ using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using Microsoft.AspNetCore.Mvc;
 using LibraryManagement.Api.Middleware;
-using LibraryManagement.Application.Validations.Api;
-using LibraryManagement.Application.Validators; // ✅ Custom exception handling middleware
+//using LibraryManagement.Application.Validations.Api;
+using LibraryManagement.Application.Validators;
+using LibraryManagement.Application.Validations.Api; // ✅ Custom exception handling middleware
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,46 +53,37 @@ builder.Services.AddScoped<ILoanService, LoanService>();
 builder.Services.AddScoped<ILibraryService, LibraryService>();
 
 /// ================================================
-/// FLUENTVALIDATION CONFIGURATION
+/// WEB VALIDATORS REGISTRATION (SYNC) - RAZOR PAGES AND MVC
 /// ================================================
-/// IMPORTANT:
-/// - Automatic validation is disabled for controllers (to avoid issues with async validators).
-/// - Web Validators are executed automatically by RazorPages / MVC.
-/// - API Validators must be invoked manually inside Application Services.
+/// These validators are synchronous and safe for automatic ASP.NET validation.
+/// They will run automatically when using Razor Pages or MVC forms.
+/// Async validators like MustAsync MUST NOT be registered here.
 /// 
-
-// ✅ Prevent ASP.NET from running validators automatically
 builder.Services.AddControllers()
     .AddFluentValidation(fv =>
     {
-        fv.RegisterValidatorsFromAssemblyContaining<MemberCreateDtoApiValidator>();
-        fv.RegisterValidatorsFromAssemblyContaining<LoanUpdateDtoApiValidator>();
         fv.AutomaticValidationEnabled = false; 
     });
 
-/// ================================================
-/// WEB VALIDATORS REGISTRATION (SYNC) - RAZOR PAGES AND MVC
-/// ================================================
-/// These are used by Razor Pages & MVC forms.
-/// They are synchronous (no async rules like MustAsync).
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddScoped<IValidator<LibraryManagement.Application.DTOs.MemberCreateDto>, MemberCreateDtoValidator>();
 builder.Services.AddScoped<IValidator<LibraryManagement.Application.DTOs.BookCreateDto>, BookValidator>();
 builder.Services.AddScoped<IValidator<LibraryManagement.Application.DTOs.LoanCreateDto>, LoanCreateDtoValidator>();
 builder.Services.AddScoped<IValidator<LibraryManagement.Application.DTOs.LoanUpdateDto>, LoanUpdateDtoValidator>();
 
+/// ✅ Register RazorPages (uses sync validators automatically)
+builder.Services.AddRazorPages();
+
 /// ================================================
-/// API VALIDATORS REGISTRATION (ASYNC) - FOR API
+/// API VALIDATORS REGISTRATION (ASYNC) - MANUAL INVOCATION
 /// ================================================
-/// These are invoked manually inside Application Services.
-/// They support async rules (e.g. MustAsync for DB lookups).
+/// These validators contain asynchronous rules (e.g., MustAsync) and should NOT
+/// be registered for automatic ASP.NET validation.
+/// They should only be injected manually inside your application services.
 builder.Services.AddScoped<MemberCreateDtoApiValidator>();
 builder.Services.AddScoped<BookCreateDtoApiValidator>();
 builder.Services.AddScoped<LoanCreateDtoApiValidator>();
 builder.Services.AddScoped<LoanUpdateDtoApiValidator>();
-
-/// ✅ Register RazorPages (uses sync validators automatically)
-builder.Services.AddRazorPages();
 
 /// ================================================
 /// API BEHAVIOR CONFIGURATION
@@ -122,7 +114,6 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 /// ================================================
 /// SWAGGER / OPENAPI CONFIGURATION
 /// ================================================
-/// Registers Swagger UI with example providers for DTOs
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -183,7 +174,6 @@ app.Run();
 /// ================================================
 /// SWAGGER EXAMPLES FOR CREATE DTOS
 /// ================================================
-
 #region CREATE EXAMPLES
 
 /// <summary>
@@ -252,7 +242,6 @@ public class LibraryCreateExample : IExamplesProvider<LibraryManagement.Applicat
 /// ================================================
 /// SWAGGER EXAMPLES FOR UPDATE DTOS
 /// ================================================
-
 #region UPDATE EXAMPLES
 
 public class MemberUpdateExample : IExamplesProvider<LibraryManagement.Application.DTOs.MemberUpdateDto>
@@ -356,3 +345,4 @@ public class LoanUpdateExample : IExamplesProvider<LibraryManagement.Application
  * - Click "Try it out"
  * - Example requests for Create/Update DTOs are preloaded
  */
+

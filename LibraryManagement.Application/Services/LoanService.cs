@@ -2,6 +2,7 @@
 using FluentValidation;
 using LibraryManagement.Application.DTOs;
 using LibraryManagement.Application.Interfaces;
+using LibraryManagement.Application.Validations;
 using LibraryManagement.Core.Entities;
 using LibraryManagement.Infrastructure.Repositories;
 
@@ -10,7 +11,7 @@ namespace LibraryManagement.Application.Services
     /// <summary>
     /// Service implementation for the Loan entity.
     /// Handles CRUD operations, validation, and book availability.
-    /// 
+    ///
     /// ⚡ IMPORTANT:
     /// - Web (MVC/Razor): Uses <see cref="LoanCreateDtoValidator"/> (sync-only), runs automatically.
     /// - API: Uses <see cref="LoanCreateDtoApiValidator"/> and <see cref="LoanUpdateDtoApiValidator"/> (async rules allowed),
@@ -19,16 +20,19 @@ namespace LibraryManagement.Application.Services
     /// </summary>
     public class LoanService : ILoanService
     {
-        // Repositories
+        #region Fields
+
         private readonly IGenericRepository<Loan> _loanRepository;
         private readonly IGenericRepository<Book> _bookRepository;
-
-        // AutoMapper for DTO <-> Entity mapping
         private readonly IMapper _mapper;
 
-        // API validators for manual validation (async capable)
-        private readonly IValidator<Loan> _loanCreateDtoApiValidator;
-        private readonly IValidator<LoanUpdateDto> _loanUpdateDtoApiValidator;
+        // Async DTO validators for API usage
+        private readonly LoanCreateDtoApiValidator _loanCreateDtoApiValidator;
+        private readonly LoanUpdateDtoApiValidator _loanUpdateDtoApiValidator;
+
+        #endregion
+
+        #region Constructor
 
         /// <summary>
         /// Constructor: injects repositories, mapper, and API validators.
@@ -37,8 +41,8 @@ namespace LibraryManagement.Application.Services
             IGenericRepository<Loan> loanRepository,
             IGenericRepository<Book> bookRepository,
             IMapper mapper,
-            IValidator<Loan> loanCreateDtoApiValidator,
-            IValidator<LoanUpdateDto> loanUpdateDtoApiValidator)
+            LoanCreateDtoApiValidator loanCreateDtoApiValidator,
+            LoanUpdateDtoApiValidator loanUpdateDtoApiValidator)
         {
             _loanRepository = loanRepository;
             _bookRepository = bookRepository;
@@ -46,6 +50,10 @@ namespace LibraryManagement.Application.Services
             _loanCreateDtoApiValidator = loanCreateDtoApiValidator;
             _loanUpdateDtoApiValidator = loanUpdateDtoApiValidator;
         }
+
+        #endregion
+
+        #region Read Methods
 
         /// <summary>
         /// Retrieves all loans without related entities.
@@ -127,8 +135,6 @@ namespace LibraryManagement.Application.Services
             return _mapper.Map<LoanDto>(loan);
         }
 
-
-
         /// <summary>
         /// Retrieves a loan by ID with full details (LoanDetailsDto).
         /// Returns null if loan is not found.
@@ -147,6 +153,10 @@ namespace LibraryManagement.Application.Services
             return _mapper.Map<LoanDetailsDto>(loanEntity);
         }
 
+        #endregion
+
+        #region Create Methods
+
         /// <summary>
         /// Creates a new loan and marks the associated book as unavailable.
         /// Manual async validation is used for API requests.
@@ -156,12 +166,10 @@ namespace LibraryManagement.Application.Services
         {
             var loan = _mapper.Map<Loan>(dto);
 
-            // ✅ API manual async validation
-            var validationResult = await _loanCreateDtoApiValidator.ValidateAsync(loan);
+            // ✅ Manual async validation
+            var validationResult = await _loanCreateDtoApiValidator.ValidateAsync(dto);
             if (!validationResult.IsValid)
-            {
                 throw new ValidationException("Validation failed", validationResult.Errors);
-            }
 
             // Check if book exists
             var book = await _bookRepository.GetByIdAsync(dto.BookId);
@@ -188,13 +196,18 @@ namespace LibraryManagement.Application.Services
             return loanDto;
         }
 
-        // Implementar el método GetLoansByBookIdAsync
+        /// <summary>
+        /// Retrieves all loans for a specific book.
+        /// </summary>
         public async Task<IEnumerable<LoanDto>> GetLoansByBookIdAsync(int bookId)
         {
             var loans = await _loanRepository.GetAllAsync(l => l.BookId == bookId);
             return _mapper.Map<IEnumerable<LoanDto>>(loans);
         }
 
+        #endregion
+
+        #region Update Methods
 
         /// <summary>
         /// Updates an existing loan record.
@@ -231,6 +244,10 @@ namespace LibraryManagement.Application.Services
             await _loanRepository.UpdateAsync(loan);
         }
 
+        #endregion
+
+        #region Delete Methods
+
         /// <summary>
         /// Deletes a loan by ID.
         /// Throws ArgumentException if the loan does not exist.
@@ -239,5 +256,7 @@ namespace LibraryManagement.Application.Services
         {
             await _loanRepository.DeleteAsync(id);
         }
+
+        #endregion
     }
 }
