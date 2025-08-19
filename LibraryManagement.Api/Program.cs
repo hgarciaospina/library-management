@@ -11,7 +11,6 @@ using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using Microsoft.AspNetCore.Mvc;
 using LibraryManagement.Api.Middleware;
-//using LibraryManagement.Application.Validations.Api;
 using LibraryManagement.Application.Validators;
 using LibraryManagement.Application.Validations.Api; // ✅ Custom exception handling middleware
 
@@ -59,17 +58,15 @@ builder.Services.AddScoped<ILibraryService, LibraryService>();
 /// They will run automatically when using Razor Pages or MVC forms.
 /// Async validators like MustAsync MUST NOT be registered here.
 /// 
-builder.Services.AddControllers()
-    .AddFluentValidation(fv =>
-    {
-        fv.AutomaticValidationEnabled = false; 
-    });
+
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddScoped<IValidator<LibraryManagement.Application.DTOs.MemberCreateDto>, MemberCreateDtoValidator>();
 builder.Services.AddScoped<IValidator<LibraryManagement.Application.DTOs.BookCreateDto>, BookValidator>();
 builder.Services.AddScoped<IValidator<LibraryManagement.Application.DTOs.LoanCreateDto>, LoanCreateDtoValidator>();
 builder.Services.AddScoped<IValidator<LibraryManagement.Application.DTOs.LoanUpdateDto>, LoanUpdateDtoValidator>();
+
+builder.Services.AddScoped<MemberCreateDtoApiValidator>();
 
 /// ✅ Register RazorPages (uses sync validators automatically)
 builder.Services.AddRazorPages();

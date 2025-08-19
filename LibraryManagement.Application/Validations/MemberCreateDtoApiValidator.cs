@@ -33,17 +33,17 @@ namespace LibraryManagement.Application.Validations.Api
                 .When(m => !string.IsNullOrWhiteSpace(m.PhoneNumber))
                 .WithMessage("Phone number format is invalid. Use international format, e.g., +123456789.");
 
-            // LibraryId is required and must exist
-            RuleFor(m => m.LibraryId)
-                .NotNull().WithMessage("LibraryId is required.")
-                .Must(id => id > 0).WithMessage("LibraryId must be greater than zero.")
-                .MustAsync(async (id, cancellation) =>
-                {
-                    if (!id.HasValue) return false; // Defensive check for null
-                    var library = await libraryService.GetByIdAsync(id.Value);
-                    return library != null;
-                })
-                .WithMessage("The selected library does not exist.");
+            //// LibraryId is required and must exist
+            //RuleFor(m => m.LibraryId)
+            //    .NotNull().WithMessage("LibraryId is required.")
+            //    .Must(id => id > 0).WithMessage("LibraryId must be greater than zero.")
+            //    .MustAsync(async (id, cancellation) =>
+            //    {
+            //        if (!id.HasValue) return false; // Defensive check for null
+            //        var library = await libraryService.GetByIdAsync(id.Value);
+            //        return library != null;
+            //    })
+            //    .WithMessage("The selected library does not exist.");
         }
     }
 }

@@ -1,10 +1,10 @@
 ﻿using FluentValidation;
 using LibraryManagement.Core.Entities;
-using System;
+using LibraryManagement.Application.DTOs;
 
 namespace LibraryManagement.Application.Validations
 {
-    public class MemberValidator : AbstractValidator<Member>
+    public class MemberValidator : AbstractValidator<MemberDto>
     {
         public MemberValidator()
         {
@@ -25,7 +25,7 @@ namespace LibraryManagement.Application.Validations
                 .Matches(@"^\+?\d{7,15}$").WithMessage("Invalid phone number format.");
 
             RuleFor(m => m.RegistrationDate)
-                .LessThanOrEqualTo(DateTime.UtcNow).WithMessage("Registration date cannot be in the future.");
+                .LessThanOrEqualTo(DateTime.Now).WithMessage("Registration date cannot be in the future.");
 
             RuleFor(m => m.LibraryId)
                 .GreaterThan(0).WithMessage("Library must be selected.");
