@@ -23,7 +23,6 @@ namespace LibraryManagement.Application.Interfaces
         /// </summary>
         Task<IEnumerable<LoanDetailsDto>> GetAllDetailsAsync();
 
-
         /// <summary>
         /// Retrieves a single loan by its unique ID without related entities.
         /// </summary>
@@ -73,8 +72,19 @@ namespace LibraryManagement.Application.Interfaces
         /// <returns>A LoanDetailsDto if found; otherwise, null.</returns>
         Task<LoanDetailsDto?> GetDetailsByIdAsync(int id);
 
+        /// <summary>
+        /// Retrieves all loans associated with a specific book.
+        /// </summary>
+        /// <param name="bookId">The ID of the book.</param>
+        /// <returns>A collection of LoanDto associated with the book.</returns>
         Task<IEnumerable<LoanDto>> GetLoansByBookIdAsync(int bookId);
 
-
+        /// <summary>
+        /// Retrieves all loans associated with a specific member.
+        /// Useful to check if a member has active loans before deletion.
+        /// </summary>
+        /// <param name="memberId">The ID of the member.</param>
+        /// <returns>A collection of LoanDto associated with the member.</returns>
+        Task<IEnumerable<LoanDto>> GetLoansByMemberIdAsync(int memberId);
     }
 }

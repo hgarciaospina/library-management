@@ -76,7 +76,7 @@ namespace LibraryManagement.Infrastructure.Repositories
             return await query.ToListAsync();
         }
 
-        // Nuevo método con predicado para filtrado
+        // New method with predicate for filtering
         public async Task<IEnumerable<T>> GetAllAsync(Func<T, bool> predicate)
         {
             return await Task.FromResult(_context.Set<T>().Where(predicate).ToList());
