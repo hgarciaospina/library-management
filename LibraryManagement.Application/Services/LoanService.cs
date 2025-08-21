@@ -22,6 +22,10 @@ namespace LibraryManagement.Application.Services
 
         private readonly IGenericRepository<Loan> _loanRepository;
         private readonly IGenericRepository<Book> _bookRepository;
+        private readonly IGenericRepository<Library> _libraryRepository;
+        private readonly IGenericRepository<Member> _memberRepository
+;
+
         private readonly IMapper _mapper;
 
         #endregion
@@ -34,10 +38,15 @@ namespace LibraryManagement.Application.Services
         public LoanService(
             IGenericRepository<Loan> loanRepository,
             IGenericRepository<Book> bookRepository,
+            IGenericRepository<Library> libraryRepository,
+            IGenericRepository<Member> memberRepository,
             IMapper mapper)
         {
             _loanRepository = loanRepository;
             _bookRepository = bookRepository;
+            _libraryRepository = libraryRepository;
+            _memberRepository = memberRepository;
+
             _mapper = mapper;
         }
 
@@ -133,6 +142,18 @@ namespace LibraryManagement.Application.Services
             if (book == null)
             {
                 throw new ArgumentException("The selected book does not exist.");
+            }
+
+            var library = await _bookRepository.GetByIdAsync(dto.LibraryId);
+            if (library == null)
+            {
+                throw new ArgumentException("The selected libray does not exist.");
+            }
+
+            var member = await _memberRepository.GetByIdAsync(dto.MemberId);
+            if (member == null)
+            {
+                throw new ArgumentException("The selected member does not exist.");
             }
 
             book.IsAvailable = false;
