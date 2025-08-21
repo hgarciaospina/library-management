@@ -253,6 +253,9 @@ namespace LibraryManagement.Application.Services
         /// </summary>
         public async Task DeleteAsync(int id)
         {
+            var loan = await _loanRepository.GetByIdAsync(id)
+               ?? throw new KeyNotFoundException($"Loan with ID {id} not found.");
+            
             await _loanRepository.DeleteAsync(id);
         }
 
