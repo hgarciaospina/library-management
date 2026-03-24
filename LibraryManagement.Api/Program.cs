@@ -23,8 +23,6 @@ using AutoMapper;
 using LibraryManagement.Application.DTOs;
 using Microsoft.Extensions.DependencyInjection;
 using AutoMapper.Execution;
-using LibraryManagement.Core.Entities; // ✅ Añadir este using
-using LibraryManagement.Application.DTOs; // ✅ Añadir este using
 
 
 // ALIAS para evitar ambigüedad
